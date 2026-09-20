@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#051F20">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Mi Control Financiero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Bangers&family=Permanent+Marker&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.belvo.io/belvo-widget-1-stable.js" async></script>
+<style>
+/* ===== Tokens ===== */
+:root{
+ --navy:#8EB69B;--navy-2:#235347;--navy-soft:rgba(142,182,155,.16);
+ --green:#8EB69B;--green-soft:rgba(142,182,155,.18);--green-deep:#6FA083;
+ --orange:#FF6400;--orange-deep:#CC5000;--orange-soft:rgba(255,100,0,.15);
+ --bg:#051F20;--surface:#0B2B26;--border:rgba(218,241,222,.09);
+ --ink:#EAF6EC;--muted:#9FC2AE;--muted-2:#6C8F7C;
+ --cream:#F5EBE1;--black:#050505;
+ --radius-lg:24px;--radius-md:18px;--radius-sm:12px;
+ --shadow:0 14px 34px rgba(0,0,0,.45);
+ --nav-h:64px;--surface2:#163832;
+ --font-display:'Space Grotesk',-apple-system,'Segoe UI',Roboto,Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Inter,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;
+ background:
+  radial-gradient(90% 55% at 15% -8%, rgba(142,182,155,.14) 0%, rgba(142,182,155,0) 60%),
+  radial-gradient(70% 45% at 100% 0%, rgba(255,100,0,.06) 0%, rgba(255,100,0,0) 55%),
+  linear-gradient(180deg, var(--bg) 0%, var(--black) 130%);
+ background-attachment:fixed;background-color:var(--black)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--navy-2);outline-offset:2px}
+.app{max-width:480px;margin:auto;padding:14px 16px calc(var(--nav-h) + 34px);position:relative;min-height:100vh}
+@media(min-width:860px){.app{max-width:960px}}
+.muted{color:var(--muted);font-size:13px}
+.empty{text-align:center;padding:30px 10px;color:var(--muted-2);font-size:14px}
+
+/* ===== FASE B: flujo de acceso (paleta propia, oscura/lima — aislada del resto de la app) ===== */
+#appRoot{display:none}
+.auth-flow{
+ --a-bg:#051F20;--a-surface:#0B2B26;--a-surface2:#163832;--a-border:rgba(218,241,222,.09);
+ --a-text:#F5EBE1;--a-text2:#9FC2AE;--a-lime:#DAF1DE;--a-lime-dim:rgba(218,241,222,.14);
+ --a-err:#FF8A5C;
+ position:fixed;inset:0;z-index:50;color:var(--a-text);
+ background:
+  radial-gradient(85% 50% at 50% 0%, rgba(142,182,155,.16) 0%, rgba(142,182,155,0) 60%),
+  radial-gradient(60% 40% at 85% 100%, rgba(255,100,0,.08) 0%, rgba(255,100,0,0) 55%),
+  linear-gradient(180deg, #051F20 0%, #050505 140%);
+ font-family:-apple-system,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+ display:none;overflow-y:auto;
+}
+.auth-flow.show{display:flex;justify-content:center}
+.auth-inner{width:100%;max-width:420px;padding:0 20px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;min-height:100%}
+.auth-panel{display:none;flex:1;flex-direction:column;padding-top:max(32px,env(safe-area-inset-top))}
+.auth-panel.active{display:flex;animation:authFade .28s ease}
+@keyframes authFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.auth-back{align-self:flex-start;color:var(--a-text2);background:var(--a-surface);border:1px solid var(--a-border);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px}
+.auth-back svg{width:18px;height:18px}
+.auth-welcome-spacer{flex:1;min-height:16px}
+.auth-mascot-wrap{align-self:center;text-align:center;margin:0 0 26px;position:relative;padding-top:18px}
+.auth-mascot-wrap::before{content:"";position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:132px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(142,182,155,.55),rgba(142,182,155,0) 72%);filter:blur(2px)}
+.auth-mascot-wrap .mascot{position:relative;z-index:1}
+.auth-mascot-wrap img{height:19vh;max-height:170px;min-height:110px;width:auto;display:block;margin:0 auto;filter:drop-shadow(0 0 22px rgba(226,255,63,.16))}
+.auth-mascot-missing{width:120px;height:120px;border-radius:24px;background:var(--a-surface);border:1px dashed var(--a-border);display:grid;place-items:center;color:var(--a-text2);font-size:11px;text-align:center;padding:8px;margin:0 auto}
+.auth-brand{text-align:center;margin-bottom:34px}
+.auth-brand h1{font-family:var(--font-display);font-size:27px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+.auth-brand p{color:var(--a-text2);font-size:14.5px;margin:0;line-height:1.5}
+.auth-welcome-actions{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
+.btn-auth-primary{background:var(--a-lime);color:#0B2B26;font-weight:700;font-size:15.5px;padding:16px;border-radius:18px;text-align:center;width:100%;box-shadow:0 10px 26px rgba(218,241,222,.18)}
+.btn-auth-primary:active{transform:scale(.98)}
+.btn-auth-secondary{background:transparent;color:var(--a-text2);border:1px solid var(--a-border);font-weight:600;font-size:14.5px;padding:13px;border-radius:16px;text-align:center;width:100%}
+.btn-auth-secondary:active{transform:scale(.98)}
+.auth-title-block{margin-bottom:26px}
+.auth-title-block h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.auth-sub{color:var(--a-text2);font-size:13.5px;margin:0;line-height:1.5}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-size:12.5px;font-weight:650;color:var(--a-text2);margin-bottom:7px}
+.auth-field input{width:100%;height:50px;padding:0 15px;border-radius:15px;background:var(--a-surface2);border:1px solid var(--a-border);color:var(--a-text);font-size:15px}
+.auth-field input::placeholder{color:var(--a-text2)}
+.auth-field input:focus{outline:none;border-color:var(--a-lime);box-shadow:0 0 0 3px var(--a-lime-dim)}
+.auth-msg{min-height:18px;font-size:13px;color:var(--a-text2);margin:2px 0 16px}
+.auth-msg.err{color:var(--a-err)}
+.auth-msg.ok{color:var(--a-lime)}
+.auth-links{margin-top:18px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.auth-links a{color:var(--a-text2);font-size:13.5px;text-decoration:none}
+.auth-links a.accent{color:var(--a-lime);font-weight:650}
+@media(min-width:600px){.auth-inner{padding-top:24px}}
+
+/* ===== Topbar ===== */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 14px}
+.wordmark{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;color:var(--navy)}
+.logo-mark{width:29px;height:29px;border-radius:9px;background:linear-gradient(155deg,var(--navy),var(--navy-2));display:grid;place-items:center;flex:none}
+.logo-mark svg{width:15px;height:15px;color:#fff}
+.session-pill{display:inline-flex;align-items:center;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12.5px;font-weight:650;color:var(--muted);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#offlineBanner{background:var(--orange-soft);color:var(--orange-deep);padding:9px 12px;border-radius:var(--radius-sm);margin-bottom:10px;font-weight:600}
+#syncStatus{margin:-4px 0 12px;min-height:1px}
+
+/* ===== Views ===== */
+.view{display:none}
+.view.active{display:block;animation:viewIn .18s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-title{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.01em;margin:2px 0 14px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+.section-title h2{font-size:15px;margin:0;font-weight:750;letter-spacing:-.01em}
+.card{background:linear-gradient(180deg, rgba(22,56,50,.92) 0%, rgba(11,43,38,.92) 100%);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(218,241,222,.08);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)}
+
+/* ===== Hero (Disponible) — pieza protagonista ===== */
+.hero-card{background:radial-gradient(130% 150% at 100% 0%,var(--navy-2) 0%,#0F2E28 60%,var(--black) 130%);border-radius:var(--radius-lg);padding:24px 20px 20px;color:var(--cream);box-shadow:0 20px 48px rgba(0,0,0,.5),inset 0 0 0 1px rgba(218,241,222,.06);position:relative;overflow:hidden;margin-bottom:10px}
+.hero-card::after{content:"";position:absolute;right:-50px;top:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.hero-label{font-size:12.5px;font-weight:650;opacity:.72;text-transform:none}
+.hero-value{font-size:34px;font-weight:700;letter-spacing:-.01em;margin-top:5px;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.hero-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border-radius:999px;padding:5px 10px 5px 8px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.hero-badge svg{width:11px;height:11px}
+.hero-badge.up{color:#8FE3BE}.hero-badge.down{color:#FFC79A}
+.hero-spark{display:block;width:100%;height:40px;margin-top:14px;position:relative;z-index:1}
+.hero-foot{display:flex;justify-content:space-between;align-items:center;margin-top:2px;font-size:11px;opacity:.6;position:relative;z-index:1}
+
+/* ===== Mini stats (Inicio) — superficies de color, no blancas ===== */
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.mini-stat{border-radius:var(--radius-md);padding:13px 14px;position:relative;overflow:hidden}
+.mini-stat .mini-icon{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;margin-bottom:9px;background:rgba(255,255,255,.55)}
+.mini-stat .mini-icon svg{width:14px;height:14px}
+.mini-stat.income{background:var(--green-soft)}
+.mini-stat.income .mini-icon{color:var(--green-deep)}
+.mini-stat.expense{background:var(--orange-soft)}
+.mini-stat.expense .mini-icon{color:var(--orange-deep)}
+.mini-label{font-size:11.5px;color:var(--ink);opacity:.62;font-weight:650}
+.mini-value{font-size:17px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;word-break:break-word}
+.mini-stat.income .mini-value{color:var(--green-deep)}
+.mini-stat.expense .mini-value{color:var(--orange-deep)}
+.week-strip{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:12px}
+.week-strip .mini-icon{width:26px;height:26px;border-radius:8px;background:var(--orange-soft);color:var(--orange-deep);display:grid;place-items:center;flex:none}
+.week-strip .mini-icon svg{width:13px;height:13px}
+
+/* ===== Banco destacado (Inicio) ===== */
+.bank-cta{display:flex;align-items:center;gap:13px;border-radius:var(--radius-md);padding:14px;margin-bottom:12px;background:linear-gradient(120deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;cursor:pointer}
+.bank-cta:active{transform:scale(.99)}
+.bank-cta .bank-cta-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+.bank-cta .bank-cta-icon svg{width:19px;height:19px}
+.bank-cta-title{font-weight:700;font-size:14.5px}
+.bank-cta-sub{font-size:12px;opacity:.75;margin-top:1px}
+.bank-cta-arrow{margin-left:auto;opacity:.7}
+.bank-cta.connected{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+.bank-cta.connected .bank-cta-icon{background:var(--green-soft);color:var(--green-deep)}
+.bank-cta.connected .bank-cta-sub{opacity:1;color:var(--muted)}
+
+/* ===== Quick actions / previews (Inicio) ===== */
+.quick-row{margin-bottom:12px}
+.btn-block{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:var(--radius-md);font-weight:700;font-size:14.5px}
+.btn-block.accent{background:var(--orange);color:#fff;box-shadow:0 8px 20px rgba(232,121,43,.28)}
+.btn-block svg{width:17px;height:17px}
+.tap-card{cursor:pointer}
+
+/* ===== Mascota ===== */
+/* ===== Mascota digital: mismo personaje, distintos estados por CSS (sin animaciones exageradas) ===== */
+.mascot{display:inline-block;line-height:0}
+.mascot svg{width:100%;height:100%;display:block}
+.mascot-sm{width:44px;height:52px}
+.mascot-md{width:64px;height:76px}
+.mascot-lg{width:112px;height:132px}
+.mascot [data-face]{display:none}
+.mascot[data-state="idle"] [data-face="default"],
+.mascot[data-state="focused"] [data-face="focused"],
+.mascot[data-state="happy"] [data-face="happy"],
+.mascot[data-state="alert"] [data-face="alert"],
+.mascot[data-state="resting"] [data-face="resting"],
+.mascot[data-state="celebrating"] [data-face="happy"],
+.mascot[data-state="greeting"] [data-face="happy"],
+.mascot[data-state="thinking"] [data-face="default"]{display:block}
+.mascot[data-state="thinking"] .masc-thought{display:block}
+.masc-thought{display:none}
+@keyframes mascFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes mascTiltFocus{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-3deg)}}
+@keyframes mascBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.03)}}
+@keyframes mascAlertPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes mascRestSway{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2px) rotate(1.5deg)}}
+@keyframes mascCelebrate{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-8px) scale(1.06) rotate(-4deg)}60%{transform:translateY(-2px) scale(1.03) rotate(3deg)}}
+@keyframes mascWave{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-18deg)}}
+@keyframes mascThinkSway{0%,100%{transform:rotate(0)}50%{transform:rotate(2deg)}}
+.mascot[data-state="idle"] svg{animation:mascFloat 3.2s ease-in-out infinite}
+.mascot[data-state="focused"] svg{animation:mascTiltFocus 2.6s ease-in-out infinite}
+.mascot[data-state="happy"] svg{animation:mascBounce 1s ease-in-out infinite}
+.mascot[data-state="alert"] svg{animation:mascAlertPulse 1.1s ease-in-out infinite}
+.mascot[data-state="resting"] svg{animation:mascRestSway 5s ease-in-out infinite;opacity:.82}
+.mascot[data-state="celebrating"] svg{animation:mascCelebrate .9s ease-in-out 2}
+.mascot[data-state="greeting"] .masc-arm-r{animation:mascWave .6s ease-in-out 3;transform-origin:60px 92px}
+.mascot[data-state="thinking"] svg{animation:mascThinkSway 3.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.mascot svg,.mascot [class*="masc-arm"]{animation:none!important}}
+
+/* Burbuja de diálogo de la mascota (no es un alert, es parte de la interfaz) */
+.mascot-bubble{position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:12px 14px;flex:1;min-width:0}
+.mascot-bubble::before{content:"";position:absolute;left:-6px;top:16px;width:12px;height:12px;background:var(--surface2);border-left:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
+
+.mascot-card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
+.mascot-avatar{width:44px;height:44px;border-radius:14px;background:var(--bg);display:grid;place-items:center;flex:none;overflow:hidden}
+.mascot-avatar svg{width:34px;height:34px}
+.mascot-body{flex:1;min-width:0;padding-top:2px}
+.mascot-tip{font-size:13.5px;line-height:1.45;color:var(--ink)}
+.mascot-label{font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--muted-2);margin-bottom:3px}
+.mascot-more{margin-top:6px;padding:4px 0;font-size:12.5px}
+.home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-top:4px}
+.home-greeting{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.home-subgreeting{color:var(--muted);font-size:12.5px;margin-top:2px}
+.bank-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.bank-chip{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:7px 12px 7px 8px;font-size:12.5px;max-width:100%}
+.bank-chip .chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bank-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex:none}
+.tap-card:active{transform:scale(.99)}
+
+/* ===== Pills (período) ===== */
+.pills{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px;gap:2px;margin-bottom:14px}
+.pill{padding:8px 15px;border-radius:999px;font-size:13px;font-weight:650;color:var(--muted)}
+.pill.active{background:var(--navy);color:#fff}
+
+/* ===== Movimientos ===== */
+.tx{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.tx:last-child{border-bottom:0}
+.tx-left{display:flex;gap:12px;align-items:center;min-width:0}
+.tx-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;font-size:17px}
+.tx-icon.income{background:var(--green-soft)}
+.tx-icon.expense{background:var(--orange-soft)}
+.tx-name{font-weight:650;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.tx-right{text-align:right;flex:none;padding-left:10px}
+.amount{font-weight:750;font-variant-numeric:tabular-nums;font-size:14.5px}
+.positive{color:var(--green-deep)}.negative{color:var(--orange-deep)}
+.income{color:var(--green-deep)}.expense{color:var(--orange-deep)}
+.tx-actions{display:flex;gap:2px;justify-content:flex-end;margin-top:4px}
+.icon-btn{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--muted-2)}
+.icon-btn:hover{background:var(--bg);color:var(--ink)}
+.icon-btn svg{width:14px;height:14px}
+
+/* ===== Barras / presupuesto / análisis ===== */
+.bar{height:9px;background:var(--bg);border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--navy-2);border-radius:999px;transition:width .25s ease}
+.cat{margin:12px 0}
+.cat-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.budget-hero{display:flex;align-items:baseline;gap:8px;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--navy)}
+.budget-hero .of{font-size:13.5px;font-weight:600;color:var(--muted)}
+.budget-note{margin-top:9px}
+.alert-warn{color:var(--orange-deep);font-weight:650;font-size:13px;margin:9px 0 0}
+.alert-danger{color:#fff;background:var(--orange-deep);padding:8px 11px;border-radius:var(--radius-sm);font-weight:650;font-size:13px;margin:9px 0 0}
+
+/* ===== Comparativa semana/mes (Análisis) ===== */
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmp-col-title{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.cmp-balance{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.cmp-balance b{font-variant-numeric:tabular-nums}
+
+/* ===== Donut de categorías ===== */
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut{--seg:conic-gradient(var(--bg) 0 100%);width:104px;height:104px;border-radius:50%;background:var(--seg);flex:none;display:grid;place-items:center}
+.donut-inner{width:66px;height:66px;border-radius:50%;background:var(--surface);display:grid;place-items:center;text-align:center;box-shadow:inset 0 0 0 1px var(--border)}
+.donut-inner b{font-size:13px;font-weight:800;color:var(--navy)}
+.donut-inner span{font-size:9px;color:var(--muted);display:block}
+.legend{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex:none}
+.legend-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.legend-pct{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ===== Anillo de presupuesto (vista Presupuesto) ===== */
+.ring-wrap{display:flex;justify-content:center;margin-bottom:16px}
+.ring{--pct:0;--ring-color:var(--navy-2);width:158px;height:158px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--ring-color) calc(var(--pct)*1%),var(--bg) 0)}
+.ring-inner{width:124px;height:124px;border-radius:50%;background:var(--surface);display:grid;place-items:center;flex-direction:column;box-shadow:inset 0 0 0 1px var(--border)}
+.ring-inner-text{font-size:27px;font-weight:800;color:var(--navy)}
+.ring-inner-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* ===== Mis bancos ===== */
+.bank-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.bank-row:last-child{border-bottom:0}
+.bank-icon{width:38px;height:38px;border-radius:11px;background:var(--navy-soft);color:var(--navy);display:grid;place-items:center;flex:none}
+.bank-icon svg{width:17px;height:17px}
+.bank-status{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--green-soft);color:var(--green-deep);margin-top:2px}
+
+/* ===== Cuenta / secundarias ===== */
+.secondary-list{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.secondary-list .btn-text,.secondary-list .btn-danger-text{padding:9px 0;font-size:13.5px}
+.btn-text{background:none;color:var(--muted);font-weight:600}
+.btn-text:hover{color:var(--ink)}
+.btn-danger-text{background:none;color:var(--orange-deep);font-weight:600}
+
+/* ===== FAB ===== */
+.fab{position:fixed;right:18px;bottom:calc(var(--nav-h) + 18px);width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(142,182,155,.4);z-index:6}
+.fab svg{width:24px;height:24px}
+.fab:active{transform:scale(.95)}
+@media(min-width:860px){.fab{right:calc(50% - 480px + 18px)}}
+
+/* ===== Bottom nav ===== */
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav-h);background:rgba(5,31,32,.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(218,241,222,.08);display:flex;z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted-2);font-size:10.5px;font-weight:650;position:relative}
+.nav-item svg{width:20px;height:20px}
+.nav-item.active{color:var(--navy)}
+.nav-item.active::before{content:"";position:absolute;top:2px;width:18px;height:3px;border-radius:0 0 3px 3px;background:var(--navy)}
+
+/* ===== Modales (sin cambios funcionales) ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(11,19,36,.55);align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:var(--surface);border-radius:22px;padding:22px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(11,19,36,.3)}
+.modal h2{margin-top:0;font-size:18px}
+.form{display:grid;gap:12px}
+.form label{font-size:13px;font-weight:650;color:var(--ink)}
+.form input,.form select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);margin-top:4px}
+.form input:focus,.form select:focus{outline:none;border-color:var(--navy-2);background:var(--surface)}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 17px;border-radius:999px;font-weight:650;font-size:14px;white-space:nowrap}
+.btn-primary{background:var(--cream);color:#0B2B26}
+.btn-ghost{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
+.btn.small{padding:8px 12px;font-size:13px}
+.btn-accent{background:var(--navy);color:#fff}
+
+/* ===== REDISEÑO PREMIUM / GRAFFITI FINANCIERO ===== */
+:root{
+ --bg:#051F20;--surface:#0B2B26;--surface2:#163832;--line:rgba(142,182,155,.34);
+ --ink:#F5EBE1;--cream:#F5EBE1;--lime:#DAF1DE;--acid:#DFFF3F;--orange:#FF6400;
+ --shadow:0 22px 60px rgba(0,0,0,.52);--radius-lg:26px;--radius-md:20px;
+ --font-display:'Bangers','Space Grotesk',sans-serif;
+}
+body{background:
+ radial-gradient(60% 42% at 8% 4%,rgba(0,255,120,.11),transparent 70%),
+ radial-gradient(50% 36% at 100% 10%,rgba(255,100,0,.08),transparent 70%),
+ linear-gradient(145deg,#050505 0%,#051F20 42%,#030908 100%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,black,transparent 75%);}
+.app{max-width:470px;padding:18px 16px calc(var(--nav-h) + 34px)}
+@media(min-width:860px){.app{max-width:980px}}
+/* Welcome */
+.auth-flow{background:
+ radial-gradient(70% 45% at 50% 25%,rgba(142,182,155,.13),transparent 72%),
+ radial-gradient(35% 30% at 88% 82%,rgba(255,100,0,.09),transparent 75%),#050505;}
+.auth-inner{max-width:440px;padding-left:22px;padding-right:22px}
+.auth-welcome-spacer{min-height:8px}
+.welcome-premium-kicker{font-family:'Space Grotesk',sans-serif;font-size:10px;letter-spacing:.28em;font-weight:700;color:#8EB69B;text-align:center;margin:20px 0 4px}
+.welcome-premium-kicker span{color:var(--orange);margin-left:5px}
+.premium-mascot{margin:4px auto 8px;padding-top:12px}
+.premium-mascot::before{width:180px;height:48px;background:radial-gradient(closest-side,rgba(218,241,222,.32),transparent 72%);filter:blur(8px)}
+.premium-mascot .mascot{transform:scale(1.22);filter:drop-shadow(0 20px 30px rgba(0,0,0,.45)) drop-shadow(0 0 24px rgba(142,182,155,.22))}
+.premium-brand{margin:8px 0 16px;text-align:center}
+.premium-brand h1{font-family:'Bangers','Space Grotesk',sans-serif;font-size:48px;line-height:.95;letter-spacing:.025em;text-transform:uppercase;color:#F5EBE1;text-shadow:3px 3px 0 rgba(0,0,0,.45);margin-bottom:10px}
+.premium-brand p{font-size:16px;color:#8EB69B;letter-spacing:.03em}
+.welcome-name-field{margin:0 0 12px}
+.welcome-name-field input{width:100%;height:58px;border-radius:18px;background:rgba(11,43,38,.82);border:1px solid rgba(142,182,155,.42);padding:0 18px;color:#F5EBE1;font-size:17px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 12px 32px rgba(0,0,0,.3)}
+.welcome-name-field input::placeholder{color:#6C8F7C}
+.welcome-name-field input:focus{border-color:#DAF1DE;box-shadow:0 0 0 3px rgba(218,241,222,.08),0 14px 38px rgba(0,0,0,.35);outline:none}
+.premium-enter{height:58px;border-radius:18px;background:linear-gradient(135deg,#DAF1DE,#8EB69B);color:#051F20;font-weight:900;letter-spacing:.08em;box-shadow:0 14px 34px rgba(142,182,155,.22),0 0 0 1px rgba(218,241,222,.25);}
+.premium-enter span{color:var(--orange);font-size:21px;margin-left:7px}
+.welcome-microcopy{text-align:center;margin-top:14px;color:#6C8F7C;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+/* App chrome */
+.topbar{padding:5px 2px 16px}.wordmark{font-family:'Bangers','Space Grotesk',sans-serif;color:#DAF1DE;font-size:21px;letter-spacing:.04em;text-transform:uppercase}.logo-mark{background:linear-gradient(145deg,#DAF1DE,#8EB69B);box-shadow:0 0 18px rgba(142,182,155,.2)}.logo-mark svg{color:#051F20}.session-pill{display:none!important}
+.page-title{font-family:'Bangers','Space Grotesk',sans-serif;font-size:34px;letter-spacing:.04em;text-transform:uppercase;color:#F5EBE1;margin:0 0 15px;text-shadow:2px 2px 0 rgba(0,0,0,.4)}
+.section-title h2{font-family:'Space Grotesk',sans-serif;font-size:15px;letter-spacing:.02em}.section-title{margin-bottom:10px}
+.card,.hero-card{border:1px solid rgba(142,182,155,.26);background:linear-gradient(145deg,rgba(22,56,50,.94),rgba(5,31,32,.96));box-shadow:var(--shadow),inset 0 0 22px rgba(142,182,155,.035)}
+.hero-card{padding:22px 20px;border-radius:28px;background:radial-gradient(110% 140% at 100% 0%,rgba(35,83,71,.98),rgba(11,43,38,.96) 55%,#050505 125%);}
+.hero-value{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:#F5EBE1}.hero-label{color:#8EB69B}.hero-badge{background:rgba(218,241,222,.08);border:1px solid rgba(142,182,155,.22)}
+.mini-stats{gap:10px}.mini-stat{border:1px solid rgba(142,182,155,.18);background:linear-gradient(145deg,rgba(22,56,50,.88),rgba(5,31,32,.88));box-shadow:0 14px 30px rgba(0,0,0,.28)}
+.mini-stat .income,.income,.amount.positive{color:#DAF1DE!important}.expense,.amount.negative{color:#FF8A5C!important}
+.bar{background:rgba(218,241,222,.09);height:9px;border-radius:99px;overflow:hidden}.bar>i{background:linear-gradient(90deg,#8EB69B,#DAF1DE)!important;box-shadow:0 0 12px rgba(142,182,155,.25)}
+.tx{border-color:rgba(142,182,155,.12);background:rgba(11,43,38,.45);border-radius:16px;margin-bottom:6px;padding:12px}.tx:hover{background:rgba(22,56,50,.62)}
+.tx-icon{border:1px solid rgba(142,182,155,.18);background:#163832}.tx-icon.expense{color:#FF6400}.tx-icon.income{color:#DAF1DE}
+.bank-cta{background:linear-gradient(135deg,#163832,#0B2B26);border:1px solid rgba(142,182,155,.32);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.bank-icon{background:rgba(218,241,222,.09);color:#DAF1DE;border:1px solid rgba(142,182,155,.2)}
+.pill{border:1px solid rgba(142,182,155,.16);background:rgba(11,43,38,.68)}.pill.active{background:#DAF1DE;color:#051F20;box-shadow:0 0 18px rgba(218,241,222,.14)}
+.fab{background:linear-gradient(145deg,#DAF1DE,#8EB69B);color:#051F20;box-shadow:0 14px 30px rgba(142,182,155,.3),0 0 20px rgba(142,182,155,.15)}
+.bottom-nav{background:rgba(5,5,5,.78);border-top:1px solid rgba(142,182,155,.22);box-shadow:0 -16px 36px rgba(0,0,0,.35)}.nav-item{color:#6C8F7C}.nav-item.active{color:#DAF1DE}.nav-item.active::before{background:#DAF1DE;box-shadow:0 0 12px rgba(218,241,222,.35)}
+.btn-accent{background:linear-gradient(135deg,#DAF1DE,#8EB69B);color:#051F20;box-shadow:0 10px 24px rgba(142,182,155,.18)}
+.form input,.form select{background:rgba(11,43,38,.78);border-color:rgba(142,182,155,.2)}
+.alert-warn,.alert-danger{border-color:rgba(255,100,0,.28);background:rgba(255,100,0,.08);color:#FF9A68}
+.ring{filter:drop-shadow(0 0 10px rgba(142,182,155,.12))}
+@media(max-width:380px){.premium-brand h1{font-size:42px}.premium-mascot .mascot{transform:scale(1.08)}.app{padding-left:12px;padding-right:12px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* ===== CONTRASTE FINAL: tipografía clara sobre fondo oscuro ===== */
+body{color:#F5EBE1}
+.app{color:#F5EBE1}
+.app .page-title,.app .section-title h2,.app .home-greeting,.app .home-subgreeting,.app .mini-label,.app .tx-name,.app .tx-meta,.app .cmp-col-title,.app .cmp-balance,.app .legend-name,.app .legend-pct,.app .budget-hero,.app .budget-hero .of,.app .ring-inner-text,.app .ring-inner-sub,.app .mascot-tip,.app .mascot-label,.app .btn-text,.app .form label{color:#F5EBE1}
+.app .muted,.app .empty,.app .tx-meta,.app .cmp-col-title,.app .cmp-balance,.app .legend-pct,.app .home-subgreeting,.app .mascot-label{color:rgba(245,235,225,.72)}
+.app .bank-cta.connected,.app .btn-ghost,.app .btn-text{color:#F5EBE1}
+.app .icon-btn{color:rgba(245,235,225,.72)}
+.app .icon-btn:hover,.app .btn-text:hover{color:#F5EBE1}
+
+@keyframes authFlowIn{from{opacity:0}to{opacity:1}}
+/* ===== FIX FINAL: mascota visible dentro del consejo ===== */
+.mascot-card{
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  overflow:visible!important;
+  position:relative;
+}
+.mascot-card > .mascot-md{
+  flex:0 0 96px!important;
+  width:96px!important;
+  height:118px!important;
+  min-width:96px!important;
+  min-height:118px!important;
+  display:block!important;
+  position:relative!important;
+  z-index:3!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:visible!important;
+  background:radial-gradient(circle at 50% 42%,rgba(218,241,222,.12),rgba(218,241,222,0) 68%);
+  border-radius:28px;
+}
+.mascot-card > .mascot-md svg{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.35));
+}
+.mascot-card .mascot-bubble{z-index:2;}
+@media(max-width:520px){
+  .mascot-card{gap:10px!important;padding:14px 12px!important;}
+  .mascot-card > .mascot-md{flex-basis:82px!important;width:82px!important;min-width:82px!important;height:108px!important;}
+}
+
+/* ===== FINAL MICRO-ANIMATIONS + MASCOTA VISIBLE ===== */
+.auth-mascot-wrap .mascot{
+  width:112px!important;
+  height:132px!important;
+  min-width:112px;
+  min-height:132px;
+  display:block!important;
+  margin:0 auto;
+  opacity:1!important;
+  visibility:visible!important;
+  animation:welcomeMascotFloat 3.8s ease-in-out infinite;
+  transform-origin:50% 85%;
+}
+.auth-mascot-wrap .mascot svg{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  overflow:visible;
+}
+.premium-mascot::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:42%;
+  width:150px;
+  height:150px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(218,241,222,.12),transparent 68%);
+  filter:blur(10px);
+  pointer-events:none;
+  animation:mascotGlow 3.8s ease-in-out infinite;
+}
+@keyframes welcomeMascotFloat{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-8px) rotate(-1.2deg)}
+}
+@keyframes mascotGlow{
+  0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+}
+.app .card{
+  animation:cardReveal .42s ease both;
+}
+.app .card:nth-child(2){animation-delay:.04s}
+.app .card:nth-child(3){animation-delay:.08s}
+.app .card:nth-child(4){animation-delay:.12s}
+@keyframes cardReveal{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+.btn,.pill,.nav-item,.tap-card,.icon-btn{
+  transition:transform .18s ease,opacity .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.btn:active,.pill:active,.tap-card:active,.icon-btn:active{transform:scale(.97)}
+.nav-item.active svg{animation:navPop .28s ease}
+@keyframes navPop{
+  0%{transform:scale(.88)}
+  65%{transform:scale(1.12)}
+  100%{transform:scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .auth-mascot-wrap .mascot,.premium-mascot::after,.app .card{animation:none!important}
+}
+
+</style>
+</head>
+<body>
+<!-- ===== FASE B: flujo de acceso de pantalla completa ===== -->
+<div class="auth-flow" id="authFlow">
+<div class="auth-inner">
+
+<div class="auth-panel active" data-panel="welcome">
+<div class="auth-welcome-spacer"></div>
+<div class="welcome-premium-kicker">MI CONTROL FINANCIERO <span>◆</span></div>
+<div class="auth-mascot-wrap premium-mascot"><div class="mascot mascot-lg" id="welcomeMascot" data-state="idle"></div></div>
+<div class="auth-brand premium-brand">
+<h1 id="welcomeTitle">Hola 👋</h1>
+<p id="welcomeSubtitle">¿Cómo te llamas?</p>
+</div>
+<div class="welcome-name-field">
+<input id="welcomeNameInput" type="text" maxlength="24" autocomplete="name" placeholder="Escribe tu nombre" aria-label="Tu nombre" onkeydown="if(event.key==='Enter')enterApp()">
+</div>
+<div class="auth-welcome-actions">
+<button class="btn-auth-primary premium-enter" id="welcomeEnterBtn" onclick="enterApp()">INGRESAR <span>→</span></button>
+</div>
+<div class="welcome-microcopy">Tu dinero · tus decisiones · tu control</div>
+<div class="auth-welcome-spacer"></div>
+</div>
+
+<div class="auth-panel" data-panel="credentials">
+<button class="auth-back" onclick="showAuthScreen('welcome')" aria-label="Volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"></path></svg></button>
+<div class="auth-title-block">
+<h1 id="authTitle">Inicia sesión</h1>
+<p class="auth-sub" id="authSubtitle">Accede a tu cuenta para continuar.</p>
+</div>
+<div class="auth-field" id="authEmailField"><label>Correo electrónico</label><input id="authEmail" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com"></div>
+<div class="auth-field" id="authPassField"><label>Contraseña</label><input id="authPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+<div class="auth-field" id="authPassConfirmField" style="display:none"><label>Confirmar contraseña</label><input id="authPassConfirm" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+<div id="authMsg" class="auth-msg"></div>
+<button class="btn-auth-primary" id="authPrimaryBtn" onclick="doSignIn()">Ingresar</button>
+<div class="auth-links">
+<a href="#" id="authForgotLink" onclick="setAuthMode('forgot');return false">¿Olvidaste tu contraseña?</a>
+<a href="#" id="authSwitchLink" class="accent" onclick="setAuthMode('register');return false">¿No tienes cuenta? Crear una</a>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="app" id="appRoot">
+<div class="topbar">
+<div class="wordmark"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2.5"></rect><path d="M2 10h20"></path><circle cx="17" cy="14.5" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>Mi Control Financiero</div>
+<button class="session-pill" id="authBtn" onclick="openAuth()" style="display:none">Iniciar sesión</button>
+</div>
+
+<div id="offlineBanner" style="display:none">Sin conexión: los cambios se guardan en este dispositivo y se sincronizarán cuando vuelva la conexión.</div>
+<div id="syncStatus" class="muted"></div>
+
+<main>
+<!-- ===== INICIO ===== -->
+<section class="view active" data-view="home">
+<div class="home-header">
+<div><div class="home-greeting" id="homeGreeting">Hola 👋</div><div class="home-subgreeting">Aquí tienes un resumen de tus finanzas</div></div>
+<div class="mascot mascot-sm" id="homeMascot" data-state="idle"></div>
+</div>
+<div class="hero-card">
+<div class="hero-top">
+<div><div class="hero-label">Disponible</div><div id="balance" class="hero-value">$0</div></div>
+<div id="heroBadge" class="hero-badge up"></div>
+</div>
+<svg id="heroSpark" class="hero-spark" viewBox="0 0 100 40" preserveAspectRatio="none"></svg>
+<div class="hero-foot"><span>Últimos 14 días</span><span id="heroFootStats"></span></div>
+</div>
+
+<div class="mini-stats">
+<div class="mini-stat income">
+<div class="mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17 17 6"></path><path d="M8 6h9v9"></path></svg></div>
+<div class="mini-label">Ingresos</div><div id="income" class="mini-value">$0</div>
+</div>
+<div class="mini-stat expense">
+<div class="mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7 7 18"></path><path d="M16 18H7V9"></path></svg></div>
+<div class="mini-label">Gastos</div><div id="expense" class="mini-value">$0</div>
+</div>
+<div class="mini-stat week">
+<div class="mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect><path d="M3 9.5h18"></path><path d="M8 3v3M16 3v3"></path></svg></div>
+<div class="mini-label">Esta semana</div><div id="weekExpense" class="mini-value">$0</div>
+</div>
+</div>
+
+<div class="bank-chips" id="homeBankChips" style="display:none"></div>
+
+<div class="bank-cta" onclick="connectBank()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')connectBank()">
+<div class="bank-cta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="9" rx="1.5"></rect><path d="M3 10 12 4l9 6"></path><path d="M7 14v2M12 14v2M17 14v2"></path></svg></div>
+<div><div class="bank-cta-title">Conectar banco</div><div class="bank-cta-sub">Sincroniza tus cuentas de forma segura con Belvo</div></div>
+<div class="bank-cta-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg></div>
+</div>
+
+<div class="card tap-card" onclick="showView('budget')">
+<div class="section-title"><h2>Presupuesto</h2><span class="muted">Ver más ›</span></div>
+<div id="budgetMini"></div>
+</div>
+
+<div class="card mascot-card" id="mascotCard" style="display:none">
+<div class="mascot mascot-md" id="mascotAvatar" data-state="idle"></div>
+<div class="mascot-bubble">
+<div class="mascot-label">Consejo de hoy</div>
+<div class="mascot-tip" id="mascotTipText"></div>
+<button class="btn-text mascot-more" id="mascotMoreBtn" style="display:none" onclick="rotateMascotTip()">Otro consejo</button>
+</div>
+</div>
+</section>
+
+<!-- ===== MOVIMIENTOS ===== -->
+<section class="view" data-view="movs">
+<div class="section-title"><h1 class="page-title" style="margin:0">Movimientos</h1><span id="count" class="muted"></span></div>
+<div class="pills">
+<button class="pill" id="periodWeekBtn" onclick="setPeriod('week')">Semana</button>
+<button class="pill active" id="periodMonthBtn" onclick="setPeriod('month')">Mes</button>
+<button class="pill" id="periodAllBtn" onclick="setPeriod('all')">Todo</button>
+</div>
+<div class="card"><div id="transactions"></div></div>
+</section>
+
+<!-- ===== ANÁLISIS ===== -->
+<section class="view" data-view="analysis">
+<h1 class="page-title">Análisis</h1>
+<div class="card"><div class="section-title"><h2>Semana vs. mes</h2></div><div id="analysis"></div></div>
+<div class="card" style="margin-top:14px"><div class="section-title"><h2>Gastos por categoría</h2></div><div id="categories"></div></div>
+</section>
+
+<!-- ===== PRESUPUESTO ===== -->
+<section class="view" data-view="budget">
+<h1 class="page-title">Presupuesto</h1>
+<div class="card">
+<div class="ring-wrap"><div class="ring" id="budgetRing"><div class="ring-inner"><div><div class="ring-inner-text" id="budgetRingLabel">—</div><div class="ring-inner-sub">utilizado</div></div></div></div></div>
+<div id="budget"></div>
+<button class="btn btn-ghost btn-block" style="margin-top:16px" onclick="openBudget()">Editar presupuesto</button>
+</div>
+</section>
+
+<!-- ===== CUENTA ===== -->
+<section class="view" data-view="account">
+<h1 class="page-title">Cuenta</h1>
+<div class="card">
+<div class="muted">Sesión iniciada como</div>
+<div id="accountEmail" style="font-weight:700;margin-top:4px">No has iniciado sesión</div>
+</div>
+<div class="card" style="margin-top:14px">
+<div class="section-title"><h2>Mis bancos</h2><button class="btn btn-accent small" onclick="connectBank()">Conectar banco</button></div>
+<div id="bankAccounts"><div class="empty">Inicia sesión para ver tus bancos conectados.</div></div>
+</div>
+<div class="card" style="margin-top:14px">
+<div class="section-title"><h2>Datos</h2></div>
+<div class="secondary-list">
+<button class="btn-text" onclick="manualSync()">Sincronizar ahora</button>
+<button class="btn-text" onclick="exportData()">Exportar datos</button>
+<button class="btn-text" onclick="importFile.click()">Importar datos</button>
+<input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+<button class="btn-danger-text" onclick="clearAll()">Borrar datos</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<button class="fab" onclick="openModal()" aria-label="Nuevo movimiento">+</button>
+
+<nav class="bottom-nav">
+<button class="nav-item active" data-view="home" onclick="showView('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"></path><path d="M5 10v10h14V10"></path></svg>Inicio</button>
+<button class="nav-item" data-view="movs" onclick="showView('movs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>Movimientos</button>
+<button class="nav-item" data-view="analysis" onclick="showView('analysis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v14"></path></svg>Análisis</button>
+<button class="nav-item" data-view="budget" onclick="showView('budget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 8v4l3 2"></path></svg>Presupuesto</button>
+<button class="nav-item" data-view="account" onclick="showView('account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"></path></svg>Cuenta</button>
+</nav>
+
+<div id="overlay" class="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+<h2 id="modalTitle">Nuevo movimiento</h2>
+<form class="form" onsubmit="saveTx(event)">
+<input type="hidden" id="editId">
+<label>Tipo<select id="type"><option value="expense">Gasto</option><option value="income">Ingreso</option></select></label>
+<label>Valor (COP)<input id="amountInput" type="number" min="1" required placeholder="50000"></label>
+<label>Descripción<input id="description" required placeholder="Ej. Compra de comida"></label>
+<label>Categoría<select id="category"></select></label>
+<label>Fecha<input id="date" type="date" required></label>
+<div class="actions"><button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary">Guardar</button></div>
+</form>
+</div></div>
+
+<div id="importOverlay" class="overlay" onclick="if(event.target===this)closeImportChoice()">
+<div class="modal">
+<h2>Importar datos</h2>
+<p class="muted">El archivo es válido. ¿Cómo quieres aplicarlo?</p>
+<p class="muted"><b>Combinar</b>: conserva tus datos actuales y agrega/actualiza con los del archivo, sin perder nada. <b>Reemplazar</b>: borra tus datos actuales y deja solo los del archivo.</p>
+<div class="actions" style="flex-wrap:wrap">
+<button type="button" class="btn btn-ghost" onclick="closeImportChoice()">Cancelar</button>
+<button type="button" class="btn btn-ghost" onclick="applyImport('replace')">Reemplazar todo</button>
+<button type="button" class="btn btn-primary" onclick="applyImport('merge')">Combinar (recomendado)</button>
+</div>
+</div></div>
+
+<div id="budgetOverlay" class="overlay" onclick="if(event.target===this)closeBudget()">
+<div class="modal">
+<h2>Presupuesto mensual</h2>
+<form class="form" onsubmit="saveBudget(event)">
+<label>Límite mensual (COP)<input id="budgetInput" type="number" min="0" required></label>
+<div class="actions"><button type="button" class="btn btn-ghost" onclick="closeBudget()">Cancelar</button><button class="btn btn-primary">Guardar</button></div>
+</form>
+</div></div>
+<script>
+
+const CATS=["Alimentación","Transporte","Vivienda","Servicios","Educación","Salud","Entretenimiento","Compras","Mascotas","Suscripciones","Otros"];
+// Pega aquí tu Project URL y clave "anon public" de Supabase (Project Settings → API). Nunca pegues la clave "service_role".
+const SUPABASE_URL="https://qtaiphynjjhpqjjnopcr.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0YWlwaHluampocHFqam5vcGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyNTY5NjgsImV4cCI6MjEwNDgzMjk2OH0.9Z1s1Vr6IzBgVQ9SCFNGf1Xpz92Zug9oGbbvYCEswLU";
+let sb=null;
+try{
+ sb=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+}catch(err){
+ console.error("No se pudo inicializar Supabase (CDN no disponible u otro fallo):",err);
+ sb=null;
+}
+let currentUser=null;
+const CURRENT_VERSION=1;
+const EPOCH="1970-01-01T00:00:00.000Z"; // marca estable para datos antiguos sin fecha real: nunca cambia entre cargas
+function migrateData(raw){
+ let d=raw&&typeof raw==="object"?raw:{};
+ // "manual" = creado por el usuario. "bank_import" = reservado para una futura importación bancaria de solo lectura (aún no implementada).
+ // Un movimiento bank_import sin external_id no es válido (no se podría deduplicar), así que se degrada a manual por seguridad.
+ let transactions=(Array.isArray(d.transactions)?d.transactions:[]).map(t=>{
+  let external_id=t.external_id!=null?String(t.external_id):null;
+  let bank_account_id=t.bank_account_id!=null?String(t.bank_account_id):null;
+  let imported_at=t.imported_at!=null?String(t.imported_at):null;
+  let source=(t.source==="bank_import"&&external_id)?"bank_import":"manual";
+  if(source==="manual"){external_id=null;bank_account_id=null;imported_at=null}
+  return{id:t.id,type:t.type,amount:Number(t.amount),description:t.description,category:t.category,date:t.date,updated_at:t.updated_at||EPOCH,source,external_id,bank_account_id,imported_at}
+ });
+ let budget=Number(d.budget)||0;
+ let budgetUpdatedAt=d.budgetUpdatedAt||EPOCH;
+ let version=Number(d.version)||0;
+ let pendingDeletes=Array.isArray(d.pendingDeletes)?d.pendingDeletes:[];
+ // Formato antiguo (sin version, de la Fase 1 inicial) -> v1: se conservan movimientos y presupuesto tal cual.
+ if(version<1){version=1}
+ // Aquí se agregarán futuros pasos de migración, ej: if(version===1){...ajustes...;version=2}
+ return{version,transactions,budget,budgetUpdatedAt,pendingDeletes}
+}
+let data=migrateData(JSON.parse(localStorage.getItem("finance_v1")||'{"version":1,"transactions":[],"budget":0}'));
+let period="month";
+const money=n=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
+const today=()=>new Date().toISOString().slice(0,10);
+const save=()=>localStorage.setItem("finance_v1",JSON.stringify(data));
+save();
+function inMonth(d){let x=new Date(d+"T12:00:00"),n=new Date();return x.getMonth()===n.getMonth()&&x.getFullYear()===n.getFullYear()}
+function inWeek(d){let x=new Date(d+"T12:00:00"),n=new Date();let day=n.getDay()||7;let monday=new Date(n);monday.setHours(12,0,0,0);monday.setDate(n.getDate()-day+1);let sunday=new Date(monday);sunday.setDate(monday.getDate()+6);return x>=monday&&x<=sunday}
+function render(){
+ homeGreeting.textContent="Hola, "+(getDisplayName()||"Usuario")+" 👋";
+ if(!homeMascot.dataset.built){homeMascot.innerHTML=MASCOT_SVG;homeMascot.dataset.built="1"}
+ let ts=data.transactions.slice().sort((a,b)=>b.date.localeCompare(a.date));
+ let inc=data.transactions.filter(x=>x.type==="income"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
+ let exp=data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
+ let wexp=data.transactions.filter(x=>x.type==="expense"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
+ let winc=data.transactions.filter(x=>x.type==="income"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
+ let totalInc=data.transactions.filter(x=>x.type==="income").reduce((s,x)=>s+x.amount,0);
+ let totalExp=data.transactions.filter(x=>x.type==="expense").reduce((s,x)=>s+x.amount,0);
+ balance.textContent=money(totalInc-totalExp);income.textContent=money(inc);expense.textContent=money(exp);weekExpense.textContent=money(wexp);count.textContent=ts.length+" movimientos";
+ heroBadge.className="hero-badge "+((inc-exp)>=0?"up":"down");
+ heroBadge.innerHTML=((inc-exp)>=0?ICON_UP:ICON_DOWN)+((inc-exp)>=0?"+":"")+money(inc-exp);
+ heroFootStats.textContent="Ingresos "+money(inc)+" · Gastos "+money(exp);
+ let shown=ts.filter(x=>period==="all"||(period==="month"?inMonth(x.date):inWeek(x.date)));
+ transactions.innerHTML=shown.length?shown.map(x=>`<div class="tx"><div class="tx-left"><div class="tx-icon ${x.type}">${catIcon(x.category)}</div><div><div class="tx-name">${esc(x.description)}</div><div class="tx-meta">${esc(x.category)} · ${x.date}</div></div></div><div class="tx-right"><div class="amount ${x.type==="income"?"positive":"negative"}">${x.type==="income"?"+":"-"}${money(x.amount)}</div><div class="tx-actions"><button class="icon-btn" title="Editar" onclick="editTx('${x.id}')">${ICON_EDIT}</button><button class="icon-btn" title="Eliminar" onclick="deleteTx('${x.id}')">${ICON_TRASH}</button></div></div></div>`).join(""):`<div class="empty">No hay movimientos en este período.</div>`;
+ let cats={};data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).forEach(x=>cats[x.category]=(cats[x.category]||0)+x.amount);
+ let max=Math.max(1,...Object.values(cats));let catTotal=Math.max(1,exp);
+ let catsSorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+ let donut=buildDonut(catsSorted,catTotal);
+ categories.innerHTML=catsSorted.length?`<div class="donut-wrap"><div class="donut" style="--seg:conic-gradient(${donut.gradient})"><div class="donut-inner"><b>${money(exp)}</b><span>gastado</span></div></div><div class="legend">${donut.legend}</div></div>`:`<div class="empty">Aún no hay gastos este mes.</div>`;
+ let budgetPct=data.budget?exp/data.budget*100:0;let pct=Math.min(100,budgetPct);
+ let barColor=budgetPct>=100?"var(--orange-deep)":budgetPct>=80?"var(--orange)":"var(--navy-2)";
+ let budgetAlert=budgetPct>=100?'<p class="alert-danger">Superaste tu presupuesto mensual.</p>':budgetPct>=80?'<p class="alert-warn">Estás cerca de agotar tu presupuesto.</p>':'';
+ budget.innerHTML=data.budget?`<div class="budget-hero">${money(exp)}<span class="of">/ ${money(data.budget)}</span></div><div class="bar" style="margin:12px 0"><i style="width:${pct}%;background:${barColor}"></i></div><div class="muted budget-note">${budgetPct.toFixed(0)}% utilizado · ${money(Math.max(0,data.budget-exp))} disponibles</div>${budgetAlert}`:`<div class="empty">No has definido un presupuesto.</div>`;
+ // Vista previa compacta (Inicio) y anillo circular (vista Presupuesto): mismos valores ya calculados arriba, solo presentación.
+ budgetMini.innerHTML=data.budget?`<div class="bar" style="margin:2px 0 8px"><i style="width:${pct}%;background:${barColor}"></i></div><div class="muted">${budgetPct.toFixed(0)}% utilizado · ${money(Math.max(0,data.budget-exp))} disponibles</div>`:`<div class="empty" style="padding:8px 0">Aún no defines un presupuesto.</div>`;
+ budgetRing.style.setProperty("--pct",pct);
+ budgetRing.style.setProperty("--ring-color",barColor);
+ budgetRingLabel.textContent=data.budget?Math.round(budgetPct)+"%":"—";
+ let wBal=winc-wexp,mBal=inc-exp,wMax=Math.max(winc,wexp,1),mMax=Math.max(inc,exp,1);
+ analysis.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div><div class="muted" style="margin-bottom:8px">Esta semana</div>
+<div class="cat-head"><span>Ingresos</span><b class="income">${money(winc)}</b></div><div class="bar"><i style="width:${winc/wMax*100}%;background:var(--green)"></i></div>
+<div class="cat-head" style="margin-top:8px"><span>Gastos</span><b class="expense">${money(wexp)}</b></div><div class="bar"><i style="width:${wexp/wMax*100}%;background:var(--orange-deep)"></i></div>
+<div class="muted" style="margin-top:8px">Balance semana: <b class="${wBal>=0?"income":"expense"}">${money(wBal)}</b></div></div>
+<div><div class="muted" style="margin-bottom:8px">Este mes</div>
+<div class="cat-head"><span>Ingresos</span><b class="income">${money(inc)}</b></div><div class="bar"><i style="width:${inc/mMax*100}%;background:var(--green)"></i></div>
+<div class="cat-head" style="margin-top:8px"><span>Gastos</span><b class="expense">${money(exp)}</b></div><div class="bar"><i style="width:${exp/mMax*100}%;background:var(--orange-deep)"></i></div>
+<div class="muted" style="margin-top:8px">Balance mes: <b class="${mBal>=0?"income":"expense"}">${money(mBal)}</b></div></div>
+</div>`;
+ buildSparkline();
+ renderMascotCard();
+}
+// Icono simple (emoji) por categoría, solo presentación — no afecta el cálculo ni el almacenamiento.
+const CAT_ICONS={"Alimentación":"🍔","Transporte":"🚗","Vivienda":"🏠","Servicios":"💡","Educación":"🎓","Salud":"🩺","Entretenimiento":"🎬","Compras":"🛍️","Mascotas":"🐾","Suscripciones":"🔁","Otros":"•"};
+function catIcon(cat){return CAT_ICONS[cat]||"•"}
+const ICON_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+const ICON_TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>';
+const ICON_UP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17 17 6"></path><path d="M9 6h8v8"></path></svg>';
+const ICON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7 17 18"></path><path d="M9 18H17V10"></path></svg>';
+// ================== Donut de categorías (solo presentación) ==================
+// Recibe las mismas sumas por categoría que ya calcula render(); solo decide cómo dibujarlas.
+// Si hay más de 4 categorías, agrupa el resto en "Otros" (mismo total, sin ocultar ni inventar nada).
+const DONUT_COLORS=["var(--navy)","var(--green)","var(--orange)","var(--navy-2)","var(--muted-2)"];
+function buildDonut(catsSorted,total){
+ if(!catsSorted.length)return{gradient:"var(--bg) 0 100%",legend:""};
+ const topN=4;
+ let entries=catsSorted.slice(0,topN);
+ if(catsSorted.length>topN){entries=[...entries,["Otros",catsSorted.slice(topN).reduce((s,[,v])=>s+v,0)]]}
+ let acc=0;
+ const segs=entries.map(([,v],i)=>{const pct=v/total*100;const s=`${DONUT_COLORS[i%DONUT_COLORS.length]} ${acc.toFixed(2)}% ${(acc+pct).toFixed(2)}%`;acc+=pct;return s});
+ const legend=entries.map(([k,v],i)=>`<div class="legend-row"><span class="legend-dot" style="background:${DONUT_COLORS[i%DONUT_COLORS.length]}"></span><span class="legend-name">${esc(k)}</span><span class="legend-pct">${(v/total*100).toFixed(0)}%</span></div>`).join("");
+ return{gradient:segs.join(","),legend}
+}
+// ================== Sparkline del hero (solo presentación) ==================
+// Muestra la FORMA de la tendencia de los últimos 14 días (suma diaria de ingresos-gastos, acumulada).
+// No es un saldo total ni un dato nuevo: se calcula a partir de data.transactions, que ya existe.
+function buildSparkline(){
+ const DAYS=14;const end=new Date();end.setHours(12,0,0,0);
+ const daily=[];
+ for(let i=DAYS-1;i>=0;i--){
+  const d=new Date(end);d.setDate(end.getDate()-i);
+  const key=d.toISOString().slice(0,10);
+  daily.push(data.transactions.filter(x=>x.date===key).reduce((s,x)=>s+(x.type==="income"?x.amount:-x.amount),0))
+ }
+ let running=0;const points=daily.map(n=>running+=n);
+ const min=Math.min(0,...points),max=Math.max(0,...points),range=(max-min)||1;
+ const stepX=100/(points.length-1||1);
+ const coords=points.map((v,i)=>`${(i*stepX).toFixed(1)},${(38-((v-min)/range*34)).toFixed(1)}`).join(" ");
+ const up=points[points.length-1]>=points[0];
+ heroSpark.innerHTML=`<polyline points="${coords}" fill="none" stroke="${up?"#8FE3BE":"#FFC79A"}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+// ================== Mascota: consejos por reglas locales (sin IA, sin red, sin costo) ==================
+// Todo lo que sigue lee ÚNICAMENTE data.transactions y data.budget (ya existentes) y cachedBankAccounts
+// (ya cacheado de una petición que loadBankAccounts() ya hacía). No usa fetch, no usa Secrets, no
+// inventa ningún número: cada consejo o no aparece, o muestra un dato real ya calculado.
+// Mascota única y consistente (misma forma/color/cara en todos los estados; solo cambia
+// la cara visible y la animación CSS según data-state). Inspirada en figuras redondas verde
+// lima/pastel: cabeza redonda + cuerpo simple, ojos pequeños, boca sencilla.
+const MASCOT_SVG=`<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="mgHead" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#F1FAEA"/><stop offset="55%" stop-color="#DCEFC7"/><stop offset="100%" stop-color="#B9DFA0"/></radialGradient>
+<linearGradient id="mgBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CBE8B4"/><stop offset="100%" stop-color="#A8D48C"/></linearGradient>
+</defs>
+<ellipse cx="60" cy="140" rx="26" ry="6" fill="#04120F" opacity=".18"/>
+<rect class="masc-arm-l" x="30" y="82" width="11" height="30" rx="5.5" fill="url(#mgBody)"/>
+<rect class="masc-arm-r" x="79" y="82" width="11" height="30" rx="5.5" fill="url(#mgBody)"/>
+<rect x="42" y="118" width="14" height="20" rx="6" fill="url(#mgBody)"/>
+<rect x="64" y="118" width="14" height="20" rx="6" fill="url(#mgBody)"/>
+<path d="M60 66c22 0 34 12 34 34 0 20-10 32-22 38-2 4-6 6-12 6s-10-2-12-6c-12-6-22-18-22-38 0-22 12-34 34-34Z" fill="url(#mgBody)"/>
+<circle cx="60" cy="42" r="34" fill="url(#mgHead)"/>
+<g class="masc-thought">
+<circle cx="24" cy="8" r="3.4" fill="#DAF1DE"/>
+<circle cx="16" cy="-3" r="2.4" fill="#DAF1DE"/>
+<circle cx="10" cy="-13" r="1.6" fill="#DAF1DE"/>
+</g>
+<g data-face="default"><circle cx="49" cy="40" r="2.6" fill="#16332A"/><circle cx="71" cy="40" r="2.6" fill="#16332A"/><path d="M52 53q8 5 16 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+<g data-face="focused"><ellipse cx="49" cy="40" rx="2.6" ry="1.8" fill="#16332A"/><ellipse cx="71" cy="40" rx="2.6" ry="1.8" fill="#16332A"/><path d="M53 53h14" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+<g data-face="happy"><path d="M45 40q4-5 8 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M67 40q4-5 8 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M50 51q10 9 20 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>
+<g data-face="alert"><circle cx="49" cy="40" r="3.2" fill="#16332A"/><circle cx="71" cy="40" r="3.2" fill="#16332A"/><path d="M43 32q6-4 11-1" stroke="#16332A" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M77 32q-6-4-11-1" stroke="#16332A" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="60" cy="53" rx="4" ry="3" fill="#16332A"/></g>
+<g data-face="resting"><path d="M45 40q4 3 8 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M67 40q4 3 8 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M54 54h12" stroke="#16332A" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+</svg>`;
+
+const MONTH_MS=30; // solo para umbrales de "suficientes datos", no para cálculos financieros
+
+function monthKey(dateStr){return String(dateStr).slice(0,7)}
+
+// Devuelve la lista de consejos que REALMENTE aplican hoy, en orden de prioridad.
+// ctx trae los mismos agregados que render() ya calculó (nada se recalcula dos veces innecesariamente).
+function computeMascotTips(ctx){
+ const {inc,exp,winc,wexp,budget,cats,catTotal,transactions}=ctx;
+ const tips=[];
+ const seed=new Date().getDate();
+ const pick=arr=>arr[seed%arr.length];
+
+ // Estado inicial: sin ningún movimiento todavía → un solo mensaje de bienvenida, nada más.
+ if(!transactions.length){
+  return [{state:"resting",text:"Cuando tengas más movimientos, aquí aparecerán consejos personalizados."}];
+ }
+
+ // Regla: resumen simple de esta semana (solo si hubo algún movimiento esta semana; dato directo, sin inventar nada)
+ if(winc>0||wexp>0){
+  tips.push({state:"idle",priority:4,text:`Esta semana entraron ${money(winc)} y salieron ${money(wexp)}.`});
+ }
+
+ const expenseCountThisMonth=transactions.filter(t=>t.type==="expense"&&inMonth(t.date)).length;
+
+ // Reglas 1-2: presupuesto (excluyentes entre sí)
+ if(budget>0){
+  const pct=Math.round((exp/budget)*100);
+  if(exp>budget){
+   const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+   tips.push({state:"alert",priority:1,text:pick([
+    `Superaste tu presupuesto de este mes (${pct}%).${top?` Donde más gastaste fue en ${top[0]}.`:""}`,
+    `Vas ${pct}% por encima de tu presupuesto mensual.`,
+   ])});
+  }else if(pct>=80){
+   tips.push({state:"focused",priority:1,text:pick([
+    `Ya usaste el ${pct}% de tu presupuesto de este mes. Vas con lo justo.`,
+    `Cuidado: llevas gastado el ${pct}% de tu presupuesto.`,
+   ])});
+  }else if(pct<50 && new Date().getDate()>=15){
+   tips.push({state:"happy",priority:3,text:pick([
+    `Vas a mitad de mes y solo usaste el ${pct}% de tu presupuesto. ¡Bien ahí!`,
+   ])});
+  }
+  // Regla 5: ritmo semanal proyectado (solo con suficientes días de datos este mes)
+  const day=new Date().getDate();
+  if(exp<=budget && day>=5){
+   const projected=(exp/day)*new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+   if(projected>budget*1.1){
+    tips.push({state:"alert",priority:2,text:pick([
+     "A este ritmo de gasto, podrías superar tu presupuesto antes de fin de mes.",
+     "Si sigues gastando así, el presupuesto no te alcanzará este mes.",
+    ])});
+   }
+  }
+ }else{
+  tips.push({state:"thinking",priority:4,text:"Todavía no definiste un presupuesto. Crea uno para recibir alertas útiles sobre tus gastos."});
+ }
+
+ // Regla 3: una categoría concentra buena parte del gasto (con suficientes movimientos para que tenga sentido)
+ if(exp>0 && expenseCountThisMonth>=3){
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length){
+   const [topCat,topAmt]=sorted[0];
+   const share=topAmt/catTotal;
+   if(share>=0.4){
+    tips.push({state:"focused",priority:2,text:pick([
+     `${topCat} representa el ${Math.round(share*100)}% de tus gastos este mes.`,
+     `Casi la mitad de tus gastos (${Math.round(share*100)}%) son de ${topCat}.`,
+     `Este mes tus gastos de ${topCat} son ${money(topAmt)}.`,
+    ])});
+   }
+  }
+ }
+
+ // Regla 4: aumento fuerte en una categoría vs. el mes anterior (solo si hay datos reales del mes pasado)
+ if(expenseCountThisMonth>=3){
+  const now=new Date();
+  const thisKey=monthKey(now.toISOString());
+  const lastDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const lastKey=monthKey(lastDate.toISOString());
+  const thisSums={},lastSums={};
+  transactions.forEach(t=>{
+   if(t.type!=="expense")return;
+   const k=monthKey(t.date);
+   if(k===thisKey)thisSums[t.category]=(thisSums[t.category]||0)+t.amount;
+   else if(k===lastKey)lastSums[t.category]=(lastSums[t.category]||0)+t.amount;
+  });
+  let best=null;
+  Object.keys(thisSums).forEach(cat=>{
+   const prev=lastSums[cat];
+   if(prev&&prev>0&&thisSums[cat]/prev>=1.5){
+    if(!best||thisSums[cat]-prev>best.diff)best={cat,diff:thisSums[cat]-prev};
+   }
+  });
+  if(best){
+   tips.push({state:"focused",priority:2,text:pick([
+    `Gastaste bastante más en ${best.cat} este mes que el anterior.`,
+    `${best.cat} subió notablemente respecto al mes pasado.`,
+   ])});
+  }
+ }
+
+ // Regla 6: balance del mes positivo (con al menos un ingreso real registrado)
+ const hasIncomeThisMonth=transactions.some(t=>t.type==="income"&&inMonth(t.date));
+ if(hasIncomeThisMonth && (inc-exp)>0){
+  tips.push({state:"happy",priority:3,text:pick([
+   "¡Vas bien! Tus ingresos superan tus gastos este mes.",
+   "Buen mes: gastaste menos de lo que ingresaste.",
+   "Tu flujo neto este mes es positivo.",
+  ])});
+ }
+
+ // Regla 8: banco conectado pero nunca sincronizado (usa el cache de loadBankAccounts, sin fetch nuevo)
+ const neverSynced=cachedBankAccounts.find(b=>b.belvo_status && !transactions.some(t=>t.bank_account_id===b.id));
+ if(neverSynced){
+  tips.push({state:"thinking",priority:3,text:`Conectaste un banco pero aún no traes tus movimientos. Prueba "Sincronizar movimientos" en Cuenta.`});
+ }
+
+ tips.sort((a,b)=>(a.priority||9)-(b.priority||9));
+ return tips.length?tips:[{state:"idle",text:"Todo en orden por ahora. Sigue registrando tus movimientos para más consejos."}];
+}
+
+// Pinta la tarjeta de la mascota en Inicio con el consejo actual (o la oculta si no hay ninguno aplicable).
+function renderMascotCard(){
+ const exp=data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
+ const inc=data.transactions.filter(x=>x.type==="income"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
+ const wexp=data.transactions.filter(x=>x.type==="expense"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
+ const winc=data.transactions.filter(x=>x.type==="income"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
+ const cats={};
+ data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).forEach(x=>cats[x.category]=(cats[x.category]||0)+x.amount);
+ const catTotal=Math.max(1,exp);
+ mascotTips=computeMascotTips({inc,exp,winc,wexp,budget:data.budget||0,cats,catTotal,transactions:data.transactions});
+ mascotTipIndex=0;
+ paintMascotTip();
+}
+function paintMascotTip(){
+ if(!mascotTips.length){mascotCard.style.display="none";return}
+ const tip=mascotTips[mascotTipIndex];
+ if(!mascotAvatar.dataset.built){mascotAvatar.innerHTML=MASCOT_SVG;mascotAvatar.dataset.built="1"}
+ mascotAvatar.dataset.state=tip.state||"idle";
+ if(homeMascot){if(!homeMascot.dataset.built){homeMascot.innerHTML=MASCOT_SVG;homeMascot.dataset.built="1"}homeMascot.dataset.state=tip.state||"idle"}
+ mascotTipText.textContent=tip.text;
+ mascotMoreBtn.style.display=mascotTips.length>1?"inline-flex":"none";
+ mascotCard.style.display="flex";
+}
+// Breve celebración ante un evento positivo real (ej. registrar un ingreso). No cambia ningún
+// dato ni cálculo: solo anima la mascota unos segundos y luego vuelve a su estado real normal.
+function flashMascotCelebrate(){
+ if(!mascotAvatar||mascotCard.style.display==="none")return;
+ if(!mascotAvatar.dataset.built){mascotAvatar.innerHTML=MASCOT_SVG;mascotAvatar.dataset.built="1"}
+ const restoreTo=(mascotTips[mascotTipIndex]&&mascotTips[mascotTipIndex].state)||"idle";
+ mascotAvatar.dataset.state="celebrating";
+ if(homeMascot)homeMascot.dataset.state="celebrating";
+ setTimeout(()=>{mascotAvatar.dataset.state=restoreTo;if(homeMascot)homeMascot.dataset.state=restoreTo},1800);
+}
+function rotateMascotTip(){
+ if(mascotTips.length<2)return;
+ mascotTipIndex=(mascotTipIndex+1)%mascotTips.length;
+ paintMascotTip();
+}
+function populateCats(){category.innerHTML=CATS.map(c=>`<option>${c}</option>`).join("")}
+function openModal(id=null){populateCats();editId.value=id||"";modalTitle.textContent=id?"Editar movimiento":"Nuevo movimiento";if(id){let x=data.transactions.find(t=>t.id===id);if(!x){closeModal();return}type.value=x.type;amountInput.value=x.amount;description.value=x.description;category.value=x.category;date.value=x.date}else{type.value="expense";amountInput.value="";description.value="";date.value=today();category.value="Alimentación"}overlay.style.display="flex"}
+function closeModal(){overlay.style.display="none"}
+function saveTx(e){
+ e.preventDefault();
+ const amount=Number(amountInput.value);
+ const desc=description.value.trim();
+ if(!isFinite(amount)||amount<=0){alert("Ingresa un valor numérico mayor que cero.");return}
+ if(!desc){alert("Ingresa una descripción.");return}
+ if(!CATS.includes(category.value)){alert("Selecciona una categoría válida.");return}
+ if(type.value!=="income"&&type.value!=="expense"){alert("Selecciona un tipo de movimiento válido.");return}
+ if(!date.value||isNaN(new Date(date.value+"T12:00:00").getTime())){alert("Ingresa una fecha válida.");return}
+ let id=editId.value||crypto.randomUUID();
+ const existing=data.transactions.find(x=>x.id===id);
+ // Campos editables por el usuario, para cualquier movimiento (manual o importado):
+ let obj={id,type:type.value,amount,description:desc,category:category.value,date:date.value,updated_at:new Date().toISOString()};
+ if(existing&&existing.source==="bank_import"){
+  // Es un movimiento importado de Belvo: se conservan sus metadatos de importación tal cual.
+  // Editar su categoría/descripción/monto/fecha NO lo convierte en manual.
+  obj.source="bank_import";
+  obj.external_id=existing.external_id;
+  obj.bank_account_id=existing.bank_account_id;
+  obj.imported_at=existing.imported_at;
+ }else{
+  // Movimiento nuevo, o edición de un movimiento que ya era manual: comportamiento de siempre.
+  obj.source="manual";obj.external_id=null;obj.bank_account_id=null;obj.imported_at=null;
+ }
+ let i=data.transactions.findIndex(x=>x.id===id);
+ const isNewIncome=i<0&&obj.type==="income"; // solo celebra un ingreso nuevo real, nunca inventado
+ i>=0?data.transactions[i]=obj:data.transactions.push(obj);
+ save();if(currentUser)pushOneTransaction(obj);closeModal();render();
+ if(isNewIncome)flashMascotCelebrate();
+}
+function editTx(id){openModal(id)}
+function deleteTx(id){if(confirm("¿Eliminar este movimiento?")){data.transactions=data.transactions.filter(x=>x.id!==id);data.pendingDeletes=data.pendingDeletes.filter(p=>p.id!==id).concat([{id,deleted_at:new Date().toISOString()}]);save();render();if(currentUser)flushPendingDeletes()}}
+function setPeriod(p){period=p;render();updatePeriodPills()}
+// Solo actualiza qué pill se ve activa; no participa en el cálculo de ningún dato.
+function updatePeriodPills(){
+ [["week",periodWeekBtn],["month",periodMonthBtn],["all",periodAllBtn]].forEach(([p,btn])=>btn.classList.toggle("active",period===p))
+}
+// ================== Navegación visual entre secciones (solo presentación) ==================
+// Cambia qué sección se ve, sin tocar ningún cálculo ni recargar datos salvo refrescar "Mis bancos".
+let currentView="home";
+let mascotTips=[]; // resultado de la última evaluación de reglas (solo lectura de datos existentes)
+let mascotTipIndex=0;
+let cachedBankAccounts=[]; // cache local de lo que loadBankAccounts() ya trae; no dispara peticiones nuevas
+function showView(v){
+ currentView=v;
+ document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
+ document.querySelectorAll(".nav-item").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
+ window.scrollTo(0,0);
+ if(v==="account"||v==="home")loadBankAccounts()
+}
+// Lectura de solo lectura de bank_accounts (misma tabla y RLS ya existentes: auth.uid()=user_id).
+// No usa service_role, no crea Edge Function nueva, no cambia belvo-save-link ni dynamic-function.
+async function loadBankAccounts(){
+ if(!sb||!currentUser){bankAccounts.innerHTML=`<div class="empty">Inicia sesión para ver tus bancos conectados.</div>`;if(homeBankChips)homeBankChips.style.display="none";return}
+ try{
+  const{data:rows,error}=await sb.from("bank_accounts").select("id,alias,belvo_status,last4").eq("user_id",currentUser.id).order("created_at",{ascending:false});
+  if(error){bankAccounts.innerHTML=`<div class="empty">No se pudieron cargar tus bancos conectados.</div>`;return}
+  cachedBankAccounts=rows||[]; // reutilizado por la mascota; no dispara ninguna petición adicional
+  bankAccounts.innerHTML=(rows&&rows.length)?rows.map(r=>`<div class="bank-row" id="bank-row-${r.id}"><div class="bank-icon">🏦</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(r.alias)}</div><div class="tx-meta">${r.belvo_status?esc(r.belvo_status):"—"}${r.last4?" · ****"+esc(r.last4):""}</div><div class="muted" id="bank-sync-msg-${r.id}" style="margin-top:3px"></div></div>${r.belvo_status?`<button class="btn-text" onclick="syncBankTransactions('${r.id}',this)">Sincronizar movimientos</button>`:""}</div>`).join(""):`<div class="empty">Aún no has conectado ningún banco.</div>`
+  if(homeBankChips){
+   if(rows&&rows.length){
+    homeBankChips.innerHTML=rows.map(r=>`<div class="bank-chip"><span class="dot"></span><span class="chip-name">${esc(r.alias)}</span></div>`).join("");
+    homeBankChips.style.display="flex";
+   }else{homeBankChips.style.display="none"}
+  }
+  renderMascotCard(); // los bancos recién cargados pueden cambiar qué consejo aplica (regla 8)
+ }catch(err){bankAccounts.innerHTML=`<div class="empty">No se pudieron cargar tus bancos conectados.</div>`}
+}
+// ETAPA 14 — dispara la importación de movimientos de una conexión Belvo ya guardada.
+// Solo envía bank_account_id (el id de nuestra tabla); el backend obtiene el resto por su cuenta.
+// No cambia connectBank()/belvoConnectSuccess() ni dynamic-function/belvo-save-link.
+async function syncBankTransactions(bankAccountId,btn){
+ if(!sb||!currentUser)return;
+ const msgEl=document.getElementById("bank-sync-msg-"+bankAccountId);
+ const originalLabel=btn.textContent;
+ btn.disabled=true;btn.textContent="Sincronizando…";
+ if(msgEl)msgEl.textContent="";
+ try{
+  const{data,error}=await sb.functions.invoke("belvo-import-transactions",{method:"POST",body:{bank_account_id:bankAccountId}});
+  if(error||!data||!data.ok){
+   if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
+  }else{
+   if(msgEl)msgEl.textContent=`Listo: ${data.inserted} nuevo(s), ${data.updated} actualizado(s)${data.skipped?`, ${data.skipped} omitido(s)`:""}.`;
+   await pullFromCloud(); // refresca los movimientos visibles con lo recién importado
+  }
+ }catch(err){
+  if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
+ }finally{
+  btn.disabled=false;btn.textContent=originalLabel;
+ }
+}
+function openBudget(){budgetInput.value=data.budget||"";budgetOverlay.style.display="flex"}
+function closeBudget(){budgetOverlay.style.display="none"}
+function saveBudget(e){e.preventDefault();const b=Number(budgetInput.value);if(!isFinite(b)||b<0){alert("Ingresa un presupuesto válido (0 o mayor).");return}data.budget=b;data.budgetUpdatedAt=new Date().toISOString();save();if(currentUser)pushBudget();closeBudget();render()}
+function clearAll(){if(confirm("Esto eliminará todos los movimientos guardados en este dispositivo. ¿Continuar?")){const now=new Date().toISOString();data.pendingDeletes=data.pendingDeletes.concat(data.transactions.map(t=>({id:t.id,deleted_at:now})));data.transactions=[];data.budget=0;data.budgetUpdatedAt=now;save();render();if(currentUser){flushPendingDeletes();pushBudget()}}}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`finanzas_backup_${today()}.json`;a.click();URL.revokeObjectURL(url)}
+// Valida estrictamente un archivo de backup antes de tocar cualquier dato existente.
+// Devuelve null si es válido, o un mensaje de error claro si algo no cuadra.
+function validateBackup(parsed){
+ if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))return"El archivo no tiene un formato JSON válido.";
+ if(parsed.version!==undefined&&typeof parsed.version!=="number")return"El campo 'version' del archivo es inválido.";
+ if(typeof parsed.version==="number"&&parsed.version>CURRENT_VERSION)return"El archivo fue creado con una versión más nueva de la aplicación (v"+parsed.version+") que esta versión (v"+CURRENT_VERSION+") no sabe migrar.";
+ if(!Array.isArray(parsed.transactions))return"El archivo no contiene una lista de movimientos válida.";
+ const UUID_RE=/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+ for(const t of parsed.transactions){
+  if(!t||typeof t!=="object")return"Hay un movimiento con formato inválido.";
+  if(typeof t.id!=="string"||!UUID_RE.test(t.id))return"Hay un movimiento con un id inválido (debe ser un UUID).";
+  if(t.type!=="income"&&t.type!=="expense")return"Hay un movimiento con un tipo inválido (debe ser ingreso o gasto).";
+  if(typeof t.amount!=="number"||!isFinite(t.amount)||t.amount<=0)return"Hay un movimiento con un valor numérico inválido.";
+  if(typeof t.description!=="string"||!t.description.trim())return"Hay un movimiento sin descripción.";
+  if(typeof t.category!=="string"||!CATS.includes(t.category))return"Hay un movimiento con una categoría no reconocida.";
+  if(typeof t.date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(t.date)||isNaN(new Date(t.date+"T12:00:00").getTime()))return"Hay un movimiento con una fecha inválida.";
+  if(t.updated_at!==undefined&&(typeof t.updated_at!=="string"||isNaN(new Date(t.updated_at).getTime())))return"Hay un movimiento con una marca de tiempo inválida.";
+  if(t.source!==undefined&&t.source!=="manual"&&t.source!=="bank_import")return"Hay un movimiento con un origen (source) no reconocido.";
+  if(t.source==="bank_import"&&(typeof t.external_id!=="string"||!t.external_id.trim()))return"Hay un movimiento bancario sin identificador externo (external_id).";
+  if(t.external_id!==undefined&&t.external_id!==null&&typeof t.external_id!=="string")return"Hay un movimiento con un external_id inválido.";
+  if(t.bank_account_id!==undefined&&t.bank_account_id!==null&&typeof t.bank_account_id!=="string")return"Hay un movimiento con un bank_account_id inválido.";
+  if(t.imported_at!==undefined&&t.imported_at!==null&&(typeof t.imported_at!=="string"||isNaN(new Date(t.imported_at).getTime())))return"Hay un movimiento con una fecha de importación inválida.";
+ }
+ if(parsed.budget!==undefined&&(typeof parsed.budget!=="number"||!isFinite(parsed.budget)||parsed.budget<0))return"El presupuesto del archivo es inválido.";
+ if(parsed.budgetUpdatedAt!==undefined&&(typeof parsed.budgetUpdatedAt!=="string"||isNaN(new Date(parsed.budgetUpdatedAt).getTime())))return"La marca de tiempo del presupuesto es inválida.";
+ if(parsed.pendingDeletes!==undefined){
+  if(!Array.isArray(parsed.pendingDeletes))return"El campo de eliminaciones pendientes del archivo es inválido.";
+  for(const p of parsed.pendingDeletes){if(!p||typeof p.id!=="string"||!UUID_RE.test(p.id)||typeof p.deleted_at!=="string"||isNaN(new Date(p.deleted_at).getTime()))return"Hay una eliminación pendiente con formato inválido."}
+ }
+ return null
+}
+let pendingImportParsed=null;
+function importData(e){
+ const file=e.target.files[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  let parsed;
+  try{parsed=JSON.parse(reader.result)}catch(err){alert("Archivo inválido: el contenido no es un JSON legible.");e.target.value="";return}
+  const errMsg=validateBackup(parsed);
+  if(errMsg){alert("Archivo inválido: "+errMsg);e.target.value="";return}
+  pendingImportParsed=parsed;
+  importOverlay.style.display="flex";
+  e.target.value=""
+ };
+ reader.readAsText(file)
+}
+function closeImportChoice(){importOverlay.style.display="none";pendingImportParsed=null}
+function applyImport(mode){
+ if(!pendingImportParsed)return;
+ const parsed=pendingImportParsed,before=data;
+ const importedTx=parsed.transactions.map(t=>{
+  let isBank=t.source==="bank_import"&&typeof t.external_id==="string"&&t.external_id.trim();
+  return{id:t.id,type:t.type,amount:Number(t.amount),description:t.description,category:t.category,date:t.date,updated_at:t.updated_at||EPOCH,source:isBank?"bank_import":"manual",external_id:isBank?String(t.external_id):null,bank_account_id:isBank&&t.bank_account_id?String(t.bank_account_id):null,imported_at:isBank&&t.imported_at?String(t.imported_at):null}
+ });
+ let nextTransactions,nextBudget,nextBudgetUpdatedAt,removedByReplace=[];
+ if(mode==="merge"){
+  // Combinar: no se pierde nada existente. Por id, gana el más reciente (updated_at); lo que solo está en un lado, se conserva.
+  nextTransactions=mergeTransactionLists(before.transactions,importedTx);
+  const importedBudgetAt=parsed.budgetUpdatedAt||EPOCH;
+  if(parsed.budget!==undefined&&new Date(importedBudgetAt)>new Date(before.budgetUpdatedAt)){nextBudget=Number(parsed.budget)||0;nextBudgetUpdatedAt=importedBudgetAt}
+  else{nextBudget=before.budget;nextBudgetUpdatedAt=before.budgetUpdatedAt}
+ }else{
+  // Reemplazar: se sustituye todo por el contenido del archivo (elección explícita y confirmada del usuario).
+  nextTransactions=importedTx;
+  nextBudget=Number(parsed.budget)||0;
+  nextBudgetUpdatedAt=parsed.budgetUpdatedAt||EPOCH;
+  // Los movimientos que existían antes (de este mismo usuario/dispositivo) y no vienen en el archivo importado
+  // deben quedar marcados para eliminarse también de Supabase, y así no reaparezcan después de sincronizar.
+  const importedIds=new Set(importedTx.map(t=>t.id));
+  const removedAt=new Date().toISOString();
+  removedByReplace=before.transactions.filter(t=>!importedIds.has(t.id)).map(t=>({id:t.id,deleted_at:removedAt}))
+ }
+ // Las eliminaciones pendientes de ambos lados (más las generadas por "Reemplazar todo") siempre se combinan
+ // (nunca se pierden), sin duplicar, gana la más reciente por id.
+ const existingPD=before.pendingDeletes,importedPD=Array.isArray(parsed.pendingDeletes)?parsed.pendingDeletes:[];
+ const pdById=new Map();existingPD.concat(importedPD).concat(removedByReplace).forEach(p=>{const prev=pdById.get(p.id);if(!prev||new Date(p.deleted_at)>new Date(prev.deleted_at))pdById.set(p.id,p)});
+ // Un id con eliminación pendiente (de cualquiera de los dos lados) debe permanecer eliminado: nunca puede "resucitar" al combinar/importar.
+ nextTransactions=nextTransactions.filter(t=>!pdById.has(t.id));
+ data=migrateData({version:1,transactions:nextTransactions,budget:nextBudget,budgetUpdatedAt:nextBudgetUpdatedAt,pendingDeletes:[...pdById.values()]});
+ save();render();closeImportChoice();
+ if(currentUser){
+  // Solo se sincroniza lo que realmente cambió respecto a lo que había antes de importar (contenido completo, no solo updated_at).
+  const beforeById=new Map(before.transactions.map(t=>[t.id,t]));
+  data.transactions.filter(t=>{const b=beforeById.get(t.id);return!b||JSON.stringify(b)!==JSON.stringify(t)}).forEach(pushOneTransaction);
+  if(data.budget!==before.budget||data.budgetUpdatedAt!==before.budgetUpdatedAt)pushBudget();
+  // Las eliminaciones recién generadas (incluidas las de "Reemplazar todo") se intentan subir de una vez;
+  // el borrado siempre queda acotado al usuario actual (deleteOneTransaction filtra por user_id).
+  if(data.pendingDeletes.length)flushPendingDeletes()
+ }
+}
+// ===== FASE B: control del nuevo flujo de acceso de pantalla completa =====
+// openAuth()/closeAuth() se conservan (mismos nombres, referenciados por authBtn),
+// pero ahora controlan el flujo nuevo en vez del modal antiguo (ya retirado).
+function openAuth(){setAuthMode("login");showAuthScreen("credentials")}
+// closeAuth() solo se invoca desde doSignIn() tras un login ya confirmado como exitoso
+// (único call-site en todo el archivo), así que pasa directo a la app sin depender de
+// que onAuthStateChange ya haya actualizado currentUser (evita una condición de carrera).
+function closeAuth(){toggleAuthUI(true)}
+
+function showAuthScreen(name){
+ document.querySelectorAll(".auth-panel").forEach(p=>p.classList.toggle("active",p.dataset.panel===name));
+ authMsg.textContent="";authMsg.className="auth-msg";
+}
+// Alterna entre login/registro/recuperación reutilizando los MISMOS campos
+// (authEmail/authPass/authMsg) que ya usan doSignIn()/doSignUp(); no se duplica lógica.
+function setAuthMode(mode){
+ authMsg.textContent="";authMsg.className="auth-msg";
+ if(mode==="login"){
+  authEmailField.style.display="";
+  authTitle.textContent="Inicia sesión";
+  authSubtitle.textContent="Accede a tu cuenta para continuar.";
+  authPassField.style.display="";authPassConfirmField.style.display="none";
+  authPrimaryBtn.textContent="Ingresar";authPrimaryBtn.onclick=doSignIn;
+  authForgotLink.style.display="";
+  authSwitchLink.style.display="";authSwitchLink.textContent="¿No tienes cuenta? Crear una";authSwitchLink.onclick=()=>{setAuthMode("register");return false};
+ }else if(mode==="register"){
+  authEmailField.style.display="";
+  authTitle.textContent="Crea tu cuenta";
+  authSubtitle.textContent="Regístrate para empezar a controlar tus finanzas.";
+  authPassField.style.display="";authPassConfirmField.style.display="";
+  authPrimaryBtn.textContent="Crear cuenta";authPrimaryBtn.onclick=handleSignUpClick;
+  authForgotLink.style.display="none";
+  authSwitchLink.style.display="";authSwitchLink.textContent="¿Ya tienes cuenta? Inicia sesión";authSwitchLink.onclick=()=>{setAuthMode("login");return false};
+ }else if(mode==="forgot"){
+  authEmailField.style.display="";
+  authTitle.textContent="Recuperar contraseña";
+  authSubtitle.textContent="Te enviaremos un enlace a tu correo para restablecerla.";
+  authPassField.style.display="none";authPassConfirmField.style.display="none";
+  authPrimaryBtn.textContent="Enviar enlace";authPrimaryBtn.onclick=doForgotPassword;
+  authForgotLink.style.display="none";
+  authSwitchLink.style.display="";authSwitchLink.textContent="Volver a iniciar sesión";authSwitchLink.onclick=()=>{setAuthMode("login");return false};
+ }else if(mode==="recovery"){
+  // Se llega aquí solo desde el enlace real de recuperación de Supabase (evento PASSWORD_RECOVERY),
+  // nunca por navegación manual del usuario. La sesión temporal ya la entrega Supabase; solo pedimos la nueva contraseña.
+  authEmailField.style.display="none";
+  authTitle.textContent="Elige tu nueva contraseña";
+  authSubtitle.textContent="Ingresa y confirma tu nueva contraseña para tu cuenta.";
+  authPassField.style.display="";authPassConfirmField.style.display="";
+  authPrimaryBtn.textContent="Guardar contraseña";authPrimaryBtn.onclick=doUpdatePassword;
+  authForgotLink.style.display="none";
+  authSwitchLink.style.display="none";
+ }
+}
+// Valida la confirmación de contraseña LOCALMENTE antes de llamar a Supabase.
+// doSignUp() en sí no se modifica: sigue siendo la única función que llama a sb.auth.signUp().
+function handleSignUpClick(){
+ if(authPass.value.length<6){authMsg.textContent="La contraseña debe tener al menos 6 caracteres.";authMsg.className="auth-msg err";return}
+ if(authPass.value!==authPassConfirm.value){authMsg.textContent="Las contraseñas no coinciden.";authMsg.className="auth-msg err";return}
+ doSignUp()
+}
+// Recuperación de contraseña con el mecanismo oficial de Supabase Auth (mismo cliente sb, sin API externa).
+async function doForgotPassword(){
+ if(!sb){authMsg.textContent="Falta configurar Supabase (SUPABASE_URL/ANON_KEY) en el código.";authMsg.className="auth-msg err";return}
+ const email=authEmail.value.trim();
+ if(!email){authMsg.textContent="Ingresa tu correo para recuperar tu contraseña.";authMsg.className="auth-msg err";return}
+ authMsg.textContent="Enviando enlace…";authMsg.className="auth-msg";
+ const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+ authMsg.textContent=error?error.message:"Listo. Revisa tu correo para continuar con la recuperación.";
+ authMsg.className=error?"auth-msg err":"auth-msg ok";
+}
+// Paso final del flujo de recuperación: Supabase ya estableció una sesión temporal (evento
+// PASSWORD_RECOVERY); aquí solo se fija la nueva contraseña sobre esa sesión. Mecanismo oficial
+// de Supabase Auth (auth.updateUser), sin API externa ni sistema propio.
+async function doUpdatePassword(){
+ if(!sb){authMsg.textContent="Falta configurar Supabase (SUPABASE_URL/ANON_KEY) en el código.";authMsg.className="auth-msg err";return}
+ const p1=authPass.value,p2=authPassConfirm.value;
+ if(!p1||p1.length<6){authMsg.textContent="La contraseña debe tener al menos 6 caracteres.";authMsg.className="auth-msg err";return}
+ if(p1!==p2){authMsg.textContent="Las contraseñas no coinciden.";authMsg.className="auth-msg err";return}
+ authMsg.textContent="Guardando…";authMsg.className="auth-msg";
+ const{error}=await sb.auth.updateUser({password:p1});
+ if(error){authMsg.textContent=error.message;authMsg.className="auth-msg err";return}
+ authMsg.textContent="Contraseña actualizada. Ya puedes usar tu cuenta.";authMsg.className="auth-msg ok";
+ setTimeout(closeAuth,1200);
+}
+// Pantalla de bienvenida visual: el nombre es local y no depende del correo.
+let sessionGateDismissed=false;
+const WELCOME_GREETS=["Tu dinero, tus decisiones, bajo control.","Un vistazo limpio a tus finanzas.","Todo tu control financiero en un solo lugar."];
+function friendlyName(email){
+ if(!email)return"";
+ const n=email.split("@")[0].split(/[._\-0-9]+/)[0];
+ return n?n.charAt(0).toUpperCase()+n.slice(1).toLowerCase():""
+}
+function getDisplayName(){return (localStorage.getItem("mcf_display_name")||"").trim()}
+function renderWelcomePanel(){
+ if(!welcomeMascot.dataset.built){welcomeMascot.innerHTML=MASCOT_SVG;welcomeMascot.dataset.built="1"}
+ const saved=getDisplayName();
+ welcomeTitle.textContent=saved?"Hola, "+saved+" 👋":"Hola 👋";
+ welcomeSubtitle.textContent=saved?WELCOME_GREETS[new Date().getDate()%WELCOME_GREETS.length]:"¿Cómo te llamas?";
+ if(welcomeNameInput){welcomeNameInput.value=saved;}
+ welcomeMascot.dataset.state=saved?"greeting":"idle";
+}
+function enterApp(){
+ const typed=(welcomeNameInput&&welcomeNameInput.value||"").trim();
+ const name=typed || getDisplayName() || "Usuario";
+ localStorage.setItem("mcf_display_name",name);
+ sessionGateDismissed=true;
+ appRoot.style.display="block";
+ authFlow.classList.remove("show");
+ render();
+ loadBankAccounts();
+}
+function toggleAuthUI(isAuthed){
+ const showApp=sessionGateDismissed;
+ appRoot.style.display=showApp?"block":"none";
+ authFlow.classList.toggle("show",!showApp);
+ if(!showApp){showAuthScreen("welcome");renderWelcomePanel()}
+}
+async function doSignUp(){
+ if(!sb){authMsg.textContent="Falta configurar Supabase (SUPABASE_URL/ANON_KEY) en el código.";return}
+ const{error}=await sb.auth.signUp({email:authEmail.value.trim(),password:authPass.value,options:{emailRedirectTo:window.location.origin}});
+ authMsg.textContent=error?error.message:"Cuenta creada. Revisa tu correo si se pide confirmación, luego inicia sesión."
+}
+async function doSignIn(){
+ if(!sb){authMsg.textContent="Falta configurar Supabase (SUPABASE_URL/ANON_KEY) en el código.";return}
+ const{error}=await sb.auth.signInWithPassword({email:authEmail.value.trim(),password:authPass.value});
+ if(error){authMsg.textContent=error.message;return}
+ closeAuth()
+}
+// Sincroniza todo lo pendiente (eliminaciones, movimientos y presupuesto locales) con Supabase.
+// Devuelve true solo si todo quedó realmente guardado en la nube; false si algo falló (sin internet, error del servidor, etc).
+async function syncPendingBeforeSignOut(){
+ if(!sb||!currentUser)return true;
+ if(!navigator.onLine)return false;
+ try{
+  await flushPendingDeletes();
+  if(data.pendingDeletes.length)return false;
+  for(const t of data.transactions){if(!(await pushOneTransaction(t)))return false}
+  if(data.budget&&!(await pushBudget()))return false;
+  return true
+ }catch(err){return false}
+}
+async function doSignOut(){
+ if(!sb)return;
+ if(currentUser){
+  syncStatus.textContent="Sincronizando antes de cerrar sesión…";
+  const synced=await syncPendingBeforeSignOut();
+  if(!synced){
+   syncStatus.textContent="";
+   alert("No se pudieron sincronizar tus cambios con Supabase. Conéctate a internet e inténtalo de nuevo antes de cerrar sesión.");
+   return
+  }
+ }
+ await sb.auth.signOut();
+ sessionGateDismissed=false;
+ // Por privacidad en dispositivos compartidos: al cerrar sesión no se deja información financiera
+ // de la cuenta en este dispositivo. Queda a salvo en la nube y se vuelve a traer al iniciar sesión de nuevo.
+ data=migrateData({});
+ save();
+ render();
+ syncStatus.textContent=""
+}
+// Fusiona dos listas de movimientos por id: ante el mismo id, gana el de updated_at más reciente
+// (empate = gana la lista A). Se usa tanto para sincronizar con Supabase como para combinar un backup importado.
+function mergeTransactionLists(listA,listB){
+ const byId=new Map(listA.map(t=>[t.id,t]));
+ listB.forEach(t=>{const a=byId.get(t.id);if(!a||new Date(t.updated_at)>new Date(a.updated_at))byId.set(t.id,t)});
+ return[...byId.values()]
+}
+async function pullFromCloud(){
+ if(!sb||!currentUser)return;
+ try{
+  await flushPendingDeletes();
+  const[{data:tx,error:e1},{data:bg,error:e2}]=await Promise.all([
+   sb.from("transactions").select("*").eq("user_id",currentUser.id),
+   sb.from("budgets").select("amount,updated_at").eq("user_id",currentUser.id).maybeSingle()
+  ]);
+  if(e1)throw e1;if(e2)throw e2;
+  const pendingIds=new Set(data.pendingDeletes.map(p=>p.id));
+  // Se excluyen los ids con eliminación pendiente: si el borrado en la nube aún no se confirmó, no debe "resucitar" el movimiento.
+  const cloudList=(tx||[]).filter(t=>!pendingIds.has(t.id)).map(t=>({id:t.id,type:t.type,amount:Number(t.amount),description:t.description,category:t.category,date:t.date,updated_at:t.updated_at,source:t.source==="bank_import"?"bank_import":"manual",external_id:t.external_id||null,bank_account_id:t.bank_account_id||null,imported_at:t.imported_at||null}));
+  const cloudById=new Map(cloudList.map(t=>[t.id,t]));
+  const merged=mergeTransactionLists(data.transactions,cloudList);
+  // Se sube solo lo que quedó distinto de lo que ya había en la nube (nuevo localmente, o local más reciente).
+  const toPush=merged.filter(t=>{const c=cloudById.get(t.id);return!c||c.updated_at!==t.updated_at});
+  // Fusión del presupuesto por la misma regla de "más reciente gana"; si la nube no tiene presupuesto, se conserva el local.
+  let budget=data.budget,budgetUpdatedAt=data.budgetUpdatedAt,pushBudgetNeeded=false;
+  if(bg){if(new Date(budgetUpdatedAt)<new Date(bg.updated_at)){budget=Number(bg.amount);budgetUpdatedAt=bg.updated_at}else if(data.budget)pushBudgetNeeded=true}
+  else if(data.budget)pushBudgetNeeded=true;
+  const keepPendingDeletes=data.pendingDeletes;
+  data=migrateData({version:1,transactions:merged,budget,budgetUpdatedAt,pendingDeletes:keepPendingDeletes});
+  save();
+  render();
+  for(const t of toPush)await pushOneTransaction(t);
+  if(pushBudgetNeeded)await pushBudget();
+  syncStatus.textContent="Sincronizado con la nube · "+currentUser.email
+ }catch(err){syncStatus.textContent="No se pudo sincronizar con la nube; se sigue usando la copia local."}
+}
+async function pushOneTransaction(tx){
+ if(!sb||!currentUser)return false;
+ try{
+  const{error}=await sb.from("transactions").upsert({...tx,user_id:currentUser.id});
+  if(error){syncStatus.textContent="No se pudo guardar este movimiento en la nube (se guardó localmente).";return false}
+  return true
+ }catch(err){syncStatus.textContent="No se pudo guardar este movimiento en la nube (se guardó localmente).";return false}
+}
+async function deleteOneTransaction(id){
+ if(!sb||!currentUser)return false;
+ try{const{error}=await sb.from("transactions").delete().eq("id",id).eq("user_id",currentUser.id);return!error}
+ catch(err){return false}
+}
+async function flushPendingDeletes(){
+ if(!sb||!currentUser||!data.pendingDeletes.length)return;
+ const remaining=[];
+ for(const p of data.pendingDeletes){
+  const ok=await deleteOneTransaction(p.id);
+  if(!ok)remaining.push(p)
+ }
+ data.pendingDeletes=remaining;
+ save()
+}
+async function pushBudget(){
+ if(!sb||!currentUser)return false;
+ try{
+  const{error}=await sb.from("budgets").upsert({user_id:currentUser.id,amount:data.budget,updated_at:data.budgetUpdatedAt});
+  if(error){syncStatus.textContent="No se pudo guardar el presupuesto en la nube (se guardó localmente).";return false}
+  return true
+ }catch(err){syncStatus.textContent="No se pudo guardar el presupuesto en la nube (se guardó localmente).";return false}
+}
+// ================== Belvo: conexión bancaria de solo lectura (ETAPA 13) ==================
+// Flujo: usuario autenticado -> Edge Function "dynamic-function" (ETAPA 13A, genera el
+// access_token de Belvo) -> Belvo Connect Widget -> callback de éxito (link, institution)
+// -> Edge Function "belvo-save-link" (ETAPA 13B) -> guarda la conexión en bank_accounts.
+// Ningún secreto de Belvo ni la service_role de Supabase pasan nunca por este archivo:
+// sb.functions.invoke() adjunta automáticamente el token de sesión del usuario.
+// Esta etapa NO importa cuentas ni movimientos todavía.
+async function connectBank(){
+ if(!sb||!currentUser){alert("Inicia sesión para conectar tu banco.");return}
+ if(!navigator.onLine){alert("Necesitas conexión a internet para conectar tu banco.");return}
+ if(typeof belvoSDK==="undefined"){alert("No se pudo cargar el widget de Belvo. Intenta de nuevo en unos segundos.");return}
+ try{
+  const{data,error}=await sb.functions.invoke("dynamic-function",{method:"POST"});
+  if(error||!data||!data.access_token){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.");return}
+  belvoSDK.createWidget(data.access_token,{
+   callback:(link,institution)=>belvoConnectSuccess(link,institution),
+   onExit:()=>{},
+   onEvent:()=>{}
+  }).build()
+ }catch(err){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.")}
+}
+async function belvoConnectSuccess(link,institution){
+ try{
+  const{data,error}=await sb.functions.invoke("belvo-save-link",{method:"POST",body:{link_id:link,institution:institution||null}});
+  if(error||!data||!data.success){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.");return}
+  alert("¡Banco conectado correctamente!");
+  loadBankAccounts()
+ }catch(err){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.")}
+}
+function updateOnlineStatus(){offlineBanner.style.display=navigator.onLine?"none":"block"}
+// Garantía visual: la mascota de bienvenida se pinta cuando MASCOT_SVG ya está disponible.
+try{if(typeof renderWelcomePanel==="function")renderWelcomePanel()}catch(e){console.warn("Mascota de bienvenida:",e)}
+function manualSync(){
+ if(!sb){alert("Configura SUPABASE_URL/SUPABASE_ANON_KEY para poder sincronizar.");return}
+ if(!currentUser){alert("Inicia sesión para sincronizar con la nube.");return}
+ if(!navigator.onLine){alert("No hay conexión a internet en este momento. Tus cambios están guardados en este dispositivo.");return}
+ syncStatus.textContent="Sincronizando…";
+ pullFromCloud()
+}
+window.addEventListener("online",()=>{updateOnlineStatus();if(currentUser)pullFromCloud()});
+window.addEventListener("offline",updateOnlineStatus);
+try{
+ if(sb){
+  sb.auth.onAuthStateChange((event,session)=>{
+   if(event==="PASSWORD_RECOVERY"){
+    // Enlace real de recuperación: se pide la nueva contraseña antes de mostrar el dashboard.
+    showAuthScreen("credentials");setAuthMode("recovery");
+    return;
+   }
+   currentUser=session?session.user:null;
+   authBtn.textContent=currentUser?("Salir ("+currentUser.email+")"):"Iniciar sesión";
+   authBtn.onclick=currentUser?doSignOut:openAuth;
+   accountEmail.textContent=currentUser?currentUser.email:"No has iniciado sesión";
+   toggleAuthUI(!!currentUser);
+   if(currentUser)pullFromCloud();else syncStatus.textContent="";
+   if(currentView==="account")loadBankAccounts()
+  });
+  sb.auth.getSession().then(({data:{session}})=>{
+   currentUser=session?session.user:null;
+   if(currentUser){authBtn.textContent="Salir ("+currentUser.email+")";authBtn.onclick=doSignOut;accountEmail.textContent=currentUser.email;toggleAuthUI(true);pullFromCloud()}
+   else{toggleAuthUI(false)}
+  }).catch(()=>{toggleAuthUI(false)}) // ante un fallo de red puntual al pedir la sesión, igual se muestra la bienvenida
+ }else{
+  // Sin Supabase configurado o sin poder inicializarlo (ver captura arriba): se conserva el
+  // comportamiento previo (mostrar la app igual; los mensajes de "falta configurar Supabase"
+  // ya los muestran doSignIn/doSignUp/doForgotPassword).
+  toggleAuthUI(true);
+ }
+ populateCats();render();
+ updateOnlineStatus();
+}catch(err){
+ // Red de seguridad: cualquier fallo inesperado durante el arranque no debe dejar la pantalla en blanco.
+ console.error("Error durante el arranque de la app:",err);
+ try{toggleAuthUI(!!currentUser)}catch(e2){appRoot.style.display="block";authFlow.classList.remove("show")}
+}
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>{navigator.serviceWorker.register("service-worker.js").catch(()=>{})})
+}
+</script>
+</body>
+</html>
