@@ -10,30 +10,34 @@
 <title>Mi Control Financiero</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Bangers&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.belvo.io/belvo-widget-1-stable.js" async></script>
 <style>
 /* ===== Tokens ===== */
-:root{
- --navy:#8EB69B;--navy-2:#235347;--navy-soft:rgba(142,182,155,.16);
- --green:#8EB69B;--green-soft:rgba(142,182,155,.18);--green-deep:#6FA083;
- --orange:#FF6400;--orange-deep:#CC5000;--orange-soft:rgba(255,100,0,.15);
- --bg:#051F20;--surface:#0B2B26;--border:rgba(218,241,222,.09);
- --ink:#EAF6EC;--muted:#9FC2AE;--muted-2:#6C8F7C;
- --cream:#F5EBE1;--black:#050505;
- --radius-lg:24px;--radius-md:18px;--radius-sm:12px;
- --shadow:0 14px 34px rgba(0,0,0,.45);
- --nav-h:64px;--surface2:#163832;
- --font-display:'Space Grotesk',-apple-system,'Segoe UI',Roboto,Inter,system-ui,sans-serif;
+ :root{
+ --navy:#D7FF3F;--navy-2:#00D7C7;--navy-soft:rgba(0,215,199,.12);
+ --green:#D7FF3F;--green-soft:rgba(215,255,63,.13);--green-deep:#B8E72D;
+ --orange:#FF6400;--orange-deep:#FF8A2A;--orange-soft:rgba(255,100,0,.14);
+ --purple:#A855F7;--purple-soft:rgba(168,85,247,.15);
+ --cyan:#35D7FF;--cyan-soft:rgba(53,215,255,.12);
+ --bg:#030807;--surface:#071310;--border:rgba(53,215,255,.18);
+ --ink:#F7F8F3;--muted:#AEBBB4;--muted-2:#73837B;
+ --cream:#FFF7EA;--black:#020303;
+ --radius-lg:24px;--radius-md:17px;--radius-sm:12px;
+ --shadow:0 18px 48px rgba(0,0,0,.55);
+ --nav-h:66px;--surface2:#0B1B17;
+ --font-display:'Bangers',Impact,'Arial Black',sans-serif;
+ --font-graffiti:'Permanent Marker',cursive;
+ --font-body:'Space Grotesk',-apple-system,'Segoe UI',sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Inter,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;
+body{margin:0;font-family:var(--font-body);color:var(--ink);-webkit-font-smoothing:antialiased;
  background:
-  radial-gradient(90% 55% at 15% -8%, rgba(142,182,155,.14) 0%, rgba(142,182,155,0) 60%),
-  radial-gradient(70% 45% at 100% 0%, rgba(255,100,0,.06) 0%, rgba(255,100,0,0) 55%),
-  linear-gradient(180deg, var(--bg) 0%, var(--black) 130%);
+  radial-gradient(70% 45% at 12% -8%, rgba(215,255,63,.10) 0%, rgba(215,255,63,0) 62%),
+  radial-gradient(55% 42% at 100% 18%, rgba(168,85,247,.09) 0%, rgba(168,85,247,0) 65%),
+  radial-gradient(60% 45% at 70% 105%, rgba(255,100,0,.07) 0%, rgba(255,100,0,0) 62%),
+  linear-gradient(180deg, #030807 0%, #020303 100%);
  background-attachment:fixed;background-color:var(--black)}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
@@ -42,6 +46,29 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 @media(min-width:860px){.app{max-width:960px}}
 .muted{color:var(--muted);font-size:13px}
 .empty{text-align:center;padding:30px 10px;color:var(--muted-2);font-size:14px}
+
+
+/* ===== PREMIUM LUXURY / GRAFFITI SYSTEM ===== */
+.page-title,.section-title h2,.hero-value,.home-greeting,.auth-brand h1,.auth-title-block h1,.modal h2{font-family:var(--font-display);letter-spacing:.02em}
+.page-title{font-size:28px;line-height:1;letter-spacing:.04em;text-transform:none}
+.home-greeting{font-family:var(--font-graffiti);font-size:24px;line-height:1.1}
+.wordmark{font-family:var(--font-graffiti)!important;color:var(--green)!important;font-size:16px!important}
+.logo-mark{background:linear-gradient(145deg,var(--green),#7ED321)!important;color:#050505!important;box-shadow:0 0 24px rgba(215,255,63,.18)}
+.card{background:linear-gradient(145deg,rgba(11,27,23,.94),rgba(3,8,7,.96));border:1px solid rgba(53,215,255,.16);box-shadow:0 16px 38px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.035);}
+.card:hover{border-color:rgba(215,255,63,.24)}
+.hero-card{background:radial-gradient(120% 130% at 90% 0%,rgba(0,215,199,.20) 0%,rgba(7,19,16,.92) 45%,#020303 100%);border:1px solid rgba(53,215,255,.34);box-shadow:0 22px 54px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.06)}
+.hero-value{font-size:38px;color:#fff}
+.mini-stat.income{background:linear-gradient(145deg,rgba(215,255,63,.14),rgba(215,255,63,.035));border:1px solid rgba(215,255,63,.16)}
+.mini-stat.expense{background:linear-gradient(145deg,rgba(255,100,0,.15),rgba(255,100,0,.035));border:1px solid rgba(255,100,0,.18)}
+.mini-stat.week{background:linear-gradient(145deg,rgba(168,85,247,.15),rgba(168,85,247,.035));border:1px solid rgba(168,85,247,.18)}
+.mini-stat.income .mini-value{color:var(--green)} .mini-stat.expense .mini-value{color:#FF9A52}.mini-stat.week .mini-value{color:#D1A7FF}
+.btn-block.accent,.btn-primary{background:linear-gradient(135deg,var(--green),#9BE51F)!important;color:#050505!important;box-shadow:0 12px 28px rgba(215,255,63,.18)}
+.btn-ghost{background:rgba(53,215,255,.06)!important;border-color:rgba(53,215,255,.2)!important;color:var(--ink)!important}
+.pill.active{background:var(--green)!important;color:#050505!important}
+.bar>i{background:linear-gradient(90deg,var(--green),#8EF0FF)!important}
+.bottom-nav{background:rgba(3,8,7,.92)!important;border-top:1px solid rgba(53,215,255,.22)!important;box-shadow:0 -12px 36px rgba(0,0,0,.55)}
+.nav-item.active{color:var(--green)!important}.nav-item.active::before{background:var(--green)!important}
+.fab{background:linear-gradient(145deg,var(--green),#9BE51F)!important;color:#050505!important;box-shadow:0 14px 32px rgba(215,255,63,.24)!important}
 
 /* ===== FASE B: flujo de acceso (paleta propia, oscura/lima — aislada del resto de la app) ===== */
 #appRoot{display:none}
@@ -54,7 +81,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   radial-gradient(85% 50% at 50% 0%, rgba(142,182,155,.16) 0%, rgba(142,182,155,0) 60%),
   radial-gradient(60% 40% at 85% 100%, rgba(255,100,0,.08) 0%, rgba(255,100,0,0) 55%),
   linear-gradient(180deg, #051F20 0%, #050505 140%);
- font-family:-apple-system,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+ font-family:var(--font-body);
  display:none;overflow-y:auto;
 }
 .auth-flow.show{display:flex;justify-content:center}
@@ -65,13 +92,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .auth-back{align-self:flex-start;color:var(--a-text2);background:var(--a-surface);border:1px solid var(--a-border);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px}
 .auth-back svg{width:18px;height:18px}
 .auth-welcome-spacer{flex:1;min-height:16px}
-.auth-mascot-wrap{align-self:center;text-align:center;margin:0 0 26px;position:relative;padding-top:18px}
+.auth-mascot-wrap{align-self:center;text-align:center;margin:0 0 18px;position:relative;padding-top:18px}
 .auth-mascot-wrap::before{content:"";position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:132px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(142,182,155,.55),rgba(142,182,155,0) 72%);filter:blur(2px)}
-.auth-mascot-wrap .mascot{position:relative;z-index:1}
+.auth-mascot-wrap .mascot{position:relative;z-index:1}.welcome-mascot-art{position:relative;z-index:1;width:155px;height:166px;margin:0 auto;animation:welcomeBob 3.4s ease-in-out infinite;filter:drop-shadow(0 12px 24px rgba(0,0,0,.5))}.welcome-mascot-art svg{width:100%;height:100%;display:block}@keyframes welcomeBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px) rotate(-1deg)}}
 .auth-mascot-wrap img{height:19vh;max-height:170px;min-height:110px;width:auto;display:block;margin:0 auto;filter:drop-shadow(0 0 22px rgba(226,255,63,.16))}
 .auth-mascot-missing{width:120px;height:120px;border-radius:24px;background:var(--a-surface);border:1px dashed var(--a-border);display:grid;place-items:center;color:var(--a-text2);font-size:11px;text-align:center;padding:8px;margin:0 auto}
-.auth-brand{text-align:center;margin-bottom:34px}
-.auth-brand h1{font-family:var(--font-display);font-size:27px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+.welcome-graffiti-mark{font:54px var(--font-graffiti);color:var(--green);text-shadow:4px 4px 0 rgba(255,100,0,.22),0 0 28px rgba(215,255,63,.12);transform:rotate(-4deg);margin-bottom:10px}.auth-brand{text-align:center;margin-bottom:28px}
+.auth-brand h1{font-family:var(--font-graffiti);font-size:31px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
 .auth-brand p{color:var(--a-text2);font-size:14.5px;margin:0;line-height:1.5}
 .auth-welcome-actions{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
 .btn-auth-primary{background:var(--a-lime);color:#0B2B26;font-weight:700;font-size:15.5px;padding:16px;border-radius:18px;text-align:center;width:100%;box-shadow:0 10px 26px rgba(218,241,222,.18)}
@@ -93,6 +120,39 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .auth-links a{color:var(--a-text2);font-size:13.5px;text-decoration:none}
 .auth-links a.accent{color:var(--a-lime);font-weight:650}
 @media(min-width:600px){.auth-inner{padding-top:24px}}
+
+/* ===== MASCOTA AUTÓNOMA — COMPAÑERA GLOBAL ===== */
+.luxury-badge{font:700 10px var(--font-body);letter-spacing:.12em;color:var(--green);border:1px solid rgba(215,255,63,.3);background:rgba(215,255,63,.05);padding:7px 9px;border-radius:999px}.luxury-badge span{color:var(--orange);margin-left:4px}
+.companion{position:fixed;z-index:42;right:max(14px,calc((100vw - 480px)/2 + 10px));bottom:calc(var(--nav-h) + 12px);display:flex;align-items:flex-end;gap:8px;pointer-events:none;filter:drop-shadow(0 18px 28px rgba(0,0,0,.52));transition:transform .35s ease,opacity .35s ease}
+.companion.hidden{opacity:0;transform:translateY(20px) scale(.96)}
+.companion-bubble{width:min(235px,62vw);padding:11px 13px;border:1px solid rgba(53,215,255,.28);border-radius:18px 18px 5px 18px;background:linear-gradient(145deg,rgba(10,25,21,.97),rgba(2,7,6,.97));box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);color:#fff;font-size:12.5px;line-height:1.35;pointer-events:auto;animation:bubbleIn .35s ease}
+.companion-bubble strong{display:block;font:17px var(--font-graffiti);color:var(--green);margin-bottom:2px}
+.companion-bubble small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.companion-close{position:absolute;right:4px;top:-7px;width:21px;height:21px;border-radius:50%;background:#0B1B17;border:1px solid rgba(53,215,255,.22);color:#fff;font-size:12px;pointer-events:auto}
+.companion-character{width:82px;height:104px;position:relative;flex:none;pointer-events:auto;transform-origin:50% 100%}
+.companion-character svg{width:100%;height:100%;display:block;overflow:visible}
+.companion[data-state="idle"] .companion-character{animation:companionFloat 3.6s ease-in-out infinite}
+.companion[data-state="greeting"] .companion-character{animation:companionGreeting 1.1s ease-in-out 2}
+.companion[data-state="talking"] .companion-character{animation:companionTalk .45s ease-in-out infinite alternate}
+.companion[data-state="happy"] .companion-character{animation:companionHappy .85s ease-in-out 2}
+.companion[data-state="scolding"] .companion-character{animation:companionScold .65s ease-in-out 2}
+.companion[data-state="sitting"] .companion-character{animation:companionSit 1.2s ease forwards}
+.companion[data-state="celebrating"] .companion-character{animation:companionCelebrate .9s ease-in-out 2}
+.companion .comp-arm-r{transform-origin:64px 64px}.companion[data-state="greeting"] .comp-arm-r{animation:compWave .5s ease-in-out 4}
+@keyframes companionFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes companionGreeting{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-7px) rotate(-3deg)}70%{transform:translateY(-3px) rotate(3deg)}}
+@keyframes companionTalk{from{transform:translateY(0) scaleY(1)}to{transform:translateY(-2px) scaleY(1.025)}}
+@keyframes companionHappy{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-11px) rotate(-5deg)}}
+@keyframes companionScold{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+@keyframes companionSit{to{transform:translateY(9px) scale(.94)}}
+@keyframes companionCelebrate{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-15px) rotate(-7deg)}70%{transform:translateY(-5px) rotate(7deg)}}
+@keyframes compWave{0%,100%{transform:rotate(0)}50%{transform:rotate(-28deg)}}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:520px){.companion{right:10px}.companion-bubble{width:min(210px,58vw)}.companion-character{width:72px;height:92px}}
+@media(min-width:860px){.companion{right:calc((100vw - 960px)/2 + 14px)}}
+@media(prefers-reduced-motion:reduce){.companion-character,.companion-bubble{animation:none!important}}
+
+.quick-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 12px}.quick-action{min-width:0;text-align:left;padding:11px 10px;border-radius:15px;background:#08120F;border:1px solid rgba(53,215,255,.15);color:#fff;box-shadow:0 10px 24px rgba(0,0,0,.28)}.quick-action span{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;margin-bottom:7px;font-weight:800;font-size:17px}.quick-action b{display:block;font-size:11px;line-height:1.15}.quick-income span{background:rgba(215,255,63,.14);color:var(--green)}.quick-expense span{background:rgba(255,100,0,.14);color:#FF9A52}.quick-view span{background:rgba(168,85,247,.16);color:#D1A7FF}.quick-action:active{transform:translateY(1px) scale(.99)}
 
 /* ===== Topbar ===== */
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 14px}
@@ -161,53 +221,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .btn-block svg{width:17px;height:17px}
 .tap-card{cursor:pointer}
 
-/* ===== Mascota ===== */
-/* ===== Mascota digital: mismo personaje, distintos estados por CSS (sin animaciones exageradas) ===== */
-.mascot{display:inline-block;line-height:0}
-.mascot svg{width:100%;height:100%;display:block}
-.mascot-sm{width:44px;height:52px}
-.mascot-md{width:64px;height:76px}
-.mascot-lg{width:112px;height:132px}
-.mascot [data-face]{display:none}
-.mascot[data-state="idle"] [data-face="default"],
-.mascot[data-state="focused"] [data-face="focused"],
-.mascot[data-state="happy"] [data-face="happy"],
-.mascot[data-state="alert"] [data-face="alert"],
-.mascot[data-state="resting"] [data-face="resting"],
-.mascot[data-state="celebrating"] [data-face="happy"],
-.mascot[data-state="greeting"] [data-face="happy"],
-.mascot[data-state="thinking"] [data-face="default"]{display:block}
-.mascot[data-state="thinking"] .masc-thought{display:block}
-.masc-thought{display:none}
-@keyframes mascFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes mascTiltFocus{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-3deg)}}
-@keyframes mascBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.03)}}
-@keyframes mascAlertPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
-@keyframes mascRestSway{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2px) rotate(1.5deg)}}
-@keyframes mascCelebrate{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-8px) scale(1.06) rotate(-4deg)}60%{transform:translateY(-2px) scale(1.03) rotate(3deg)}}
-@keyframes mascWave{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-18deg)}}
-@keyframes mascThinkSway{0%,100%{transform:rotate(0)}50%{transform:rotate(2deg)}}
-.mascot[data-state="idle"] svg{animation:mascFloat 3.2s ease-in-out infinite}
-.mascot[data-state="focused"] svg{animation:mascTiltFocus 2.6s ease-in-out infinite}
-.mascot[data-state="happy"] svg{animation:mascBounce 1s ease-in-out infinite}
-.mascot[data-state="alert"] svg{animation:mascAlertPulse 1.1s ease-in-out infinite}
-.mascot[data-state="resting"] svg{animation:mascRestSway 5s ease-in-out infinite;opacity:.82}
-.mascot[data-state="celebrating"] svg{animation:mascCelebrate .9s ease-in-out 2}
-.mascot[data-state="greeting"] .masc-arm-r{animation:mascWave .6s ease-in-out 3;transform-origin:60px 92px}
-.mascot[data-state="thinking"] svg{animation:mascThinkSway 3.6s ease-in-out infinite}
-@media (prefers-reduced-motion: reduce){.mascot svg,.mascot [class*="masc-arm"]{animation:none!important}}
-
-/* Burbuja de diálogo de la mascota (no es un alert, es parte de la interfaz) */
-.mascot-bubble{position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:12px 14px;flex:1;min-width:0}
-.mascot-bubble::before{content:"";position:absolute;left:-6px;top:16px;width:12px;height:12px;background:var(--surface2);border-left:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
-
-.mascot-card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
-.mascot-avatar{width:44px;height:44px;border-radius:14px;background:var(--bg);display:grid;place-items:center;flex:none;overflow:hidden}
-.mascot-avatar svg{width:34px;height:34px}
-.mascot-body{flex:1;min-width:0;padding-top:2px}
-.mascot-tip{font-size:13.5px;line-height:1.45;color:var(--ink)}
-.mascot-label{font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--muted-2);margin-bottom:3px}
-.mascot-more{margin-top:6px;padding:4px 0;font-size:12.5px}
+/* ===== LUMI 3D REAL — estilos del host transparente ===== */
 .home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-top:4px}
 .home-greeting{font-size:19px;font-weight:800;letter-spacing:-.01em}
 .home-subgreeting{color:var(--muted);font-size:12.5px;margin-top:2px}
@@ -318,179 +332,73 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .btn.small{padding:8px 12px;font-size:13px}
 .btn-accent{background:var(--navy);color:#fff}
 
-/* ===== REDISEÑO PREMIUM / GRAFFITI FINANCIERO ===== */
-:root{
- --bg:#051F20;--surface:#0B2B26;--surface2:#163832;--line:rgba(142,182,155,.34);
- --ink:#F5EBE1;--cream:#F5EBE1;--lime:#DAF1DE;--acid:#DFFF3F;--orange:#FF6400;
- --shadow:0 22px 60px rgba(0,0,0,.52);--radius-lg:26px;--radius-md:20px;
- --font-display:'Bangers','Space Grotesk',sans-serif;
-}
-body{background:
- radial-gradient(60% 42% at 8% 4%,rgba(0,255,120,.11),transparent 70%),
- radial-gradient(50% 36% at 100% 10%,rgba(255,100,0,.08),transparent 70%),
- linear-gradient(145deg,#050505 0%,#051F20 42%,#030908 100%);}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,black,transparent 75%);}
-.app{max-width:470px;padding:18px 16px calc(var(--nav-h) + 34px)}
-@media(min-width:860px){.app{max-width:980px}}
-/* Welcome */
-.auth-flow{background:
- radial-gradient(70% 45% at 50% 25%,rgba(142,182,155,.13),transparent 72%),
- radial-gradient(35% 30% at 88% 82%,rgba(255,100,0,.09),transparent 75%),#050505;}
-.auth-inner{max-width:440px;padding-left:22px;padding-right:22px}
-.auth-welcome-spacer{min-height:8px}
-.welcome-premium-kicker{font-family:'Space Grotesk',sans-serif;font-size:10px;letter-spacing:.28em;font-weight:700;color:#8EB69B;text-align:center;margin:20px 0 4px}
-.welcome-premium-kicker span{color:var(--orange);margin-left:5px}
-.premium-mascot{margin:4px auto 8px;padding-top:12px}
-.premium-mascot::before{width:180px;height:48px;background:radial-gradient(closest-side,rgba(218,241,222,.32),transparent 72%);filter:blur(8px)}
-.premium-mascot .mascot{transform:scale(1.22);filter:drop-shadow(0 20px 30px rgba(0,0,0,.45)) drop-shadow(0 0 24px rgba(142,182,155,.22))}
-.premium-brand{margin:8px 0 16px;text-align:center}
-.premium-brand h1{font-family:'Bangers','Space Grotesk',sans-serif;font-size:48px;line-height:.95;letter-spacing:.025em;text-transform:uppercase;color:#F5EBE1;text-shadow:3px 3px 0 rgba(0,0,0,.45);margin-bottom:10px}
-.premium-brand p{font-size:16px;color:#8EB69B;letter-spacing:.03em}
-.welcome-name-field{margin:0 0 12px}
-.welcome-name-field input{width:100%;height:58px;border-radius:18px;background:rgba(11,43,38,.82);border:1px solid rgba(142,182,155,.42);padding:0 18px;color:#F5EBE1;font-size:17px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 12px 32px rgba(0,0,0,.3)}
-.welcome-name-field input::placeholder{color:#6C8F7C}
-.welcome-name-field input:focus{border-color:#DAF1DE;box-shadow:0 0 0 3px rgba(218,241,222,.08),0 14px 38px rgba(0,0,0,.35);outline:none}
-.premium-enter{height:58px;border-radius:18px;background:linear-gradient(135deg,#DAF1DE,#8EB69B);color:#051F20;font-weight:900;letter-spacing:.08em;box-shadow:0 14px 34px rgba(142,182,155,.22),0 0 0 1px rgba(218,241,222,.25);}
-.premium-enter span{color:var(--orange);font-size:21px;margin-left:7px}
-.welcome-microcopy{text-align:center;margin-top:14px;color:#6C8F7C;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
-/* App chrome */
-.topbar{padding:5px 2px 16px}.wordmark{font-family:'Bangers','Space Grotesk',sans-serif;color:#DAF1DE;font-size:21px;letter-spacing:.04em;text-transform:uppercase}.logo-mark{background:linear-gradient(145deg,#DAF1DE,#8EB69B);box-shadow:0 0 18px rgba(142,182,155,.2)}.logo-mark svg{color:#051F20}.session-pill{display:none!important}
-.page-title{font-family:'Bangers','Space Grotesk',sans-serif;font-size:34px;letter-spacing:.04em;text-transform:uppercase;color:#F5EBE1;margin:0 0 15px;text-shadow:2px 2px 0 rgba(0,0,0,.4)}
-.section-title h2{font-family:'Space Grotesk',sans-serif;font-size:15px;letter-spacing:.02em}.section-title{margin-bottom:10px}
-.card,.hero-card{border:1px solid rgba(142,182,155,.26);background:linear-gradient(145deg,rgba(22,56,50,.94),rgba(5,31,32,.96));box-shadow:var(--shadow),inset 0 0 22px rgba(142,182,155,.035)}
-.hero-card{padding:22px 20px;border-radius:28px;background:radial-gradient(110% 140% at 100% 0%,rgba(35,83,71,.98),rgba(11,43,38,.96) 55%,#050505 125%);}
-.hero-value{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:#F5EBE1}.hero-label{color:#8EB69B}.hero-badge{background:rgba(218,241,222,.08);border:1px solid rgba(142,182,155,.22)}
-.mini-stats{gap:10px}.mini-stat{border:1px solid rgba(142,182,155,.18);background:linear-gradient(145deg,rgba(22,56,50,.88),rgba(5,31,32,.88));box-shadow:0 14px 30px rgba(0,0,0,.28)}
-.mini-stat .income,.income,.amount.positive{color:#DAF1DE!important}.expense,.amount.negative{color:#FF8A5C!important}
-.bar{background:rgba(218,241,222,.09);height:9px;border-radius:99px;overflow:hidden}.bar>i{background:linear-gradient(90deg,#8EB69B,#DAF1DE)!important;box-shadow:0 0 12px rgba(142,182,155,.25)}
-.tx{border-color:rgba(142,182,155,.12);background:rgba(11,43,38,.45);border-radius:16px;margin-bottom:6px;padding:12px}.tx:hover{background:rgba(22,56,50,.62)}
-.tx-icon{border:1px solid rgba(142,182,155,.18);background:#163832}.tx-icon.expense{color:#FF6400}.tx-icon.income{color:#DAF1DE}
-.bank-cta{background:linear-gradient(135deg,#163832,#0B2B26);border:1px solid rgba(142,182,155,.32);box-shadow:0 12px 28px rgba(0,0,0,.28)}
-.bank-icon{background:rgba(218,241,222,.09);color:#DAF1DE;border:1px solid rgba(142,182,155,.2)}
-.pill{border:1px solid rgba(142,182,155,.16);background:rgba(11,43,38,.68)}.pill.active{background:#DAF1DE;color:#051F20;box-shadow:0 0 18px rgba(218,241,222,.14)}
-.fab{background:linear-gradient(145deg,#DAF1DE,#8EB69B);color:#051F20;box-shadow:0 14px 30px rgba(142,182,155,.3),0 0 20px rgba(142,182,155,.15)}
-.bottom-nav{background:rgba(5,5,5,.78);border-top:1px solid rgba(142,182,155,.22);box-shadow:0 -16px 36px rgba(0,0,0,.35)}.nav-item{color:#6C8F7C}.nav-item.active{color:#DAF1DE}.nav-item.active::before{background:#DAF1DE;box-shadow:0 0 12px rgba(218,241,222,.35)}
-.btn-accent{background:linear-gradient(135deg,#DAF1DE,#8EB69B);color:#051F20;box-shadow:0 10px 24px rgba(142,182,155,.18)}
-.form input,.form select{background:rgba(11,43,38,.78);border-color:rgba(142,182,155,.2)}
-.alert-warn,.alert-danger{border-color:rgba(255,100,0,.28);background:rgba(255,100,0,.08);color:#FF9A68}
-.ring{filter:drop-shadow(0 0 10px rgba(142,182,155,.12))}
-@media(max-width:380px){.premium-brand h1{font-size:42px}.premium-mascot .mascot{transform:scale(1.08)}.app{padding-left:12px;padding-right:12px}}
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* ===== APPROVED CONCEPT LOCK — exact visual language from the green mascot concept ===== */
+:root{--bg:#02080A;--black:#010304;--surface:#06151A;--surface2:#08232A;--border:rgba(53,215,255,.22);--ink:#F7FFF8;--muted:#9BB8B5;--muted-2:#6D8985;--green:#D7FF3F;--green-deep:#9BE51F;--cyan:#35D7FF;--purple:#A855F7;--orange:#FF6400}
+body{background:radial-gradient(55% 38% at 8% 0%,rgba(53,215,255,.08),transparent 65%),radial-gradient(50% 42% at 100% 15%,rgba(168,85,247,.08),transparent 65%),linear-gradient(180deg,#02080A 0%,#010304 100%)}
+.app{max-width:480px;padding:14px 16px calc(var(--nav-h) + 28px)}
+.topbar{padding:2px 2px 12px}.wordmark{color:#fff!important;font-family:var(--font-graffiti)!important;font-size:17px!important}.logo-mark{background:transparent!important;box-shadow:none!important;width:34px;height:34px}
+.page-title{font-family:var(--font-graffiti)!important;font-size:27px;letter-spacing:.01em;color:#fff}.section-title h2{font-family:var(--font-graffiti)!important;font-size:18px;color:#fff}
+.card{background:linear-gradient(145deg,rgba(5,25,31,.96),rgba(3,11,14,.98));border:1px solid rgba(53,215,255,.22);border-radius:19px;box-shadow:0 18px 45px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04)}
+.hero-card{background:linear-gradient(145deg,#06232B,#031015 75%);border:1px solid rgba(53,215,255,.35);border-radius:18px}
+.hero-value{font-family:var(--font-body)!important;font-weight:700;color:#fff}.hero-label{color:#B7D4D1}.hero-badge{border:1px solid rgba(53,215,255,.18)}
+.mini-stat{border-radius:16px}.mini-stat.income{background:linear-gradient(145deg,rgba(0,215,199,.14),rgba(0,215,199,.025));border:1px solid rgba(0,215,199,.3)}.mini-stat.expense{background:linear-gradient(145deg,rgba(255,100,0,.14),rgba(255,100,0,.025));border:1px solid rgba(255,100,0,.25)}.mini-stat.week{background:linear-gradient(145deg,rgba(168,85,247,.14),rgba(168,85,247,.025));border:1px solid rgba(168,85,247,.25)}
+.quick-actions{grid-template-columns:repeat(4,1fr);gap:7px}.quick-action{padding:10px 7px;text-align:center;background:#06151A;border:1px solid rgba(53,215,255,.2);border-radius:14px}.quick-action span{margin:0 auto 6px}.quick-action b{font-size:10px}.quick-income span{background:rgba(215,255,63,.13);color:var(--green)}.quick-expense span{background:rgba(255,100,0,.13);color:#FF9A52}.quick-view span{background:rgba(168,85,247,.15);color:#D5B1FF}
+.btn-primary,.btn-block.accent,.fab{background:linear-gradient(135deg,#D7FF3F,#9BE51F)!important;color:#071007!important}.btn-primary{border:0}.btn-ghost{background:#08232A!important;border:1px solid rgba(53,215,255,.28)!important;color:#fff!important}.pill.active{background:linear-gradient(135deg,#A855F7,#35D7FF)!important;color:#fff!important}.bar>i{background:linear-gradient(90deg,#D7FF3F,#35D7FF)!important}
+.bottom-nav{height:66px;background:rgba(2,8,10,.96)!important;border-top:1px solid rgba(53,215,255,.2)!important}.nav-item{font-size:9.5px;color:#6F8584}.nav-item.active{color:var(--green)!important}.nav-item.active::before{background:var(--green)!important}
+.home-header{align-items:flex-start}.home-greeting{font-family:var(--font-graffiti)!important;font-size:24px;color:#fff}.home-subgreeting{color:#9BB8B5}.luxury-badge{border-color:rgba(215,255,63,.35);color:var(--green)}
+/* Global mascot: same green character from the approved concept, never a replacement character. */
+.companion{right:max(10px,calc((100vw - 480px)/2 + 8px));bottom:calc(var(--nav-h) + 10px);gap:7px}.companion-character{width:92px;height:122px;display:flex;align-items:flex-end;justify-content:center}.companion-character img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55));image-rendering:auto}.companion-bubble{width:min(228px,62vw);background:linear-gradient(145deg,rgba(5,26,31,.98),rgba(2,10,13,.98));border:1px solid rgba(53,215,255,.38);border-radius:18px 18px 5px 18px}.companion-bubble strong{color:var(--green);font-family:var(--font-graffiti);font-size:17px}.companion-close{background:#06151A;border-color:rgba(53,215,255,.3)}
+.companion[data-state="sitting"] .companion-character{transform:translateY(8px) scale(.93)}
+@media(max-width:520px){.companion{right:7px}.companion-bubble{width:min(205px,58vw)}.companion-character{width:82px;height:110px}}
 
 
-/* ===== CONTRASTE FINAL: tipografía clara sobre fondo oscuro ===== */
-body{color:#F5EBE1}
-.app{color:#F5EBE1}
-.app .page-title,.app .section-title h2,.app .home-greeting,.app .home-subgreeting,.app .mini-label,.app .tx-name,.app .tx-meta,.app .cmp-col-title,.app .cmp-balance,.app .legend-name,.app .legend-pct,.app .budget-hero,.app .budget-hero .of,.app .ring-inner-text,.app .ring-inner-sub,.app .mascot-tip,.app .mascot-label,.app .btn-text,.app .form label{color:#F5EBE1}
-.app .muted,.app .empty,.app .tx-meta,.app .cmp-col-title,.app .cmp-balance,.app .legend-pct,.app .home-subgreeting,.app .mascot-label{color:rgba(245,235,225,.72)}
-.app .bank-cta.connected,.app .btn-ghost,.app .btn-text{color:#F5EBE1}
-.app .icon-btn{color:rgba(245,235,225,.72)}
-.app .icon-btn:hover,.app .btn-text:hover{color:#F5EBE1}
+/* ===== MASCOTAS AUTÓNOMAS POR PÁGINA ===== */
+.page-mascot{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:92px;margin:4px 0 14px;padding:2px 2px 0;position:relative;overflow:visible}
+.page-mascot-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.page-mascot-name{font:700 15px var(--font-graffiti);color:var(--green);line-height:1}
+.page-mascot-text{font:600 14px var(--font-body);color:#fff;line-height:1.25}
+.page-mascot-hint{font:11px var(--font-body);color:#9BB8B5;line-height:1.25}
+.page-mascot-art{width:92px;height:104px;flex:none;display:flex;align-items:flex-end;justify-content:center;position:relative}
+.page-mascot-art::after{content:"";position:absolute;bottom:1px;left:50%;width:54px;height:12px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(215,255,63,.28),transparent 72%);filter:blur(4px);pointer-events:none}
+.page-mascot-img{display:none!important}
+.page-mascot[data-state="greeting"] .page-mascot-img{animation:pmGreeting .7s ease-in-out 2}
+.page-mascot[data-state="talking"] .page-mascot-img{animation:pmTalk 1.8s ease-in-out infinite}
+.page-mascot[data-state="happy"] .page-mascot-img,.page-mascot[data-state="celebrating"] .page-mascot-img{animation:pmHappy .9s ease-in-out 2}
+.page-mascot[data-state="thinking"] .page-mascot-img{animation:pmThink 2.8s ease-in-out infinite}
+.page-mascot[data-state="scolding"] .page-mascot-img{animation:pmScold .55s ease-in-out 3}
+.page-mascot[data-state="sitting"] .page-mascot-img,.page-mascot[data-state="resting"] .page-mascot-img{animation:pmRest 4s ease-in-out infinite}
+@keyframes pmGreeting{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-3deg)}60%{transform:translateY(-2px) rotate(3deg)}}
+@keyframes pmTalk{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes pmHappy{0%,100%{transform:translateY(0) rotate(0)}45%{transform:translateY(-8px) rotate(-4deg)}75%{transform:translateY(-2px) rotate(4deg)}}
+@keyframes pmThink{0%,100%{transform:rotate(0)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes pmScold{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@keyframes pmRest{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2px) rotate(1deg)}}
+@media(max-width:390px){.page-mascot{min-height:84px}.page-mascot-art{width:76px;height:92px}.page-mascot-text{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.page-mascot-img{animation:none!important}}
+/* No se usan fondos rectangulares detrás de la mascota: la imagen es transparente. */
+.companion,.companion-character,.companion-bubble{display:none!important}
 
-@keyframes authFlowIn{from{opacity:0}to{opacity:1}}
-/* ===== FIX FINAL: mascota visible dentro del consejo ===== */
-.mascot-card{
-  display:flex!important;
-  align-items:center!important;
-  gap:16px!important;
-  overflow:visible!important;
-  position:relative;
-}
-.mascot-card > .mascot-md{
-  flex:0 0 96px!important;
-  width:96px!important;
-  height:118px!important;
-  min-width:96px!important;
-  min-height:118px!important;
-  display:block!important;
-  position:relative!important;
-  z-index:3!important;
-  opacity:1!important;
-  visibility:visible!important;
-  overflow:visible!important;
-  background:radial-gradient(circle at 50% 42%,rgba(218,241,222,.12),rgba(218,241,222,0) 68%);
-  border-radius:28px;
-}
-.mascot-card > .mascot-md svg{
-  width:100%!important;
-  height:100%!important;
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-  overflow:visible!important;
-  filter:drop-shadow(0 10px 16px rgba(0,0,0,.35));
-}
-.mascot-card .mascot-bubble{z-index:2;}
-@media(max-width:520px){
-  .mascot-card{gap:10px!important;padding:14px 12px!important;}
-  .mascot-card > .mascot-md{flex-basis:82px!important;width:82px!important;min-width:82px!important;height:108px!important;}
-}
+/* ===== LUMI 3D — motor visual autónomo, transparente y por instancia ===== */
+.page-mascot-art{width:126px!important;height:128px!important;flex:none;display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:visible}
+.page-mascot-art::after{content:"";position:absolute;bottom:4px;left:50%;width:58px;height:11px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(215,255,63,.34),transparent 72%);filter:blur(5px);pointer-events:none}
+.lumi3d{display:block;width:126px;height:128px;max-width:none;touch-action:none;cursor:pointer;position:relative;z-index:2}
+.lumi3d-welcome{width:220px!important;height:220px!important;cursor:default}
+.welcome-mascot-art{width:220px!important;height:220px!important;filter:none!important;animation:none!important}
+.lumi3d:focus{outline:none}
+@media(max-width:390px){.page-mascot-art{width:104px!important;height:112px!important}.lumi3d{width:104px;height:112px}.lumi3d-welcome{width:190px!important;height:190px!important}.welcome-mascot-art{width:190px!important;height:190px!important}}
 
-/* ===== FINAL MICRO-ANIMATIONS + MASCOTA VISIBLE ===== */
-.auth-mascot-wrap .mascot{
-  width:112px!important;
-  height:132px!important;
-  min-width:112px;
-  min-height:132px;
-  display:block!important;
-  margin:0 auto;
-  opacity:1!important;
-  visibility:visible!important;
-  animation:welcomeMascotFloat 3.8s ease-in-out infinite;
-  transform-origin:50% 85%;
-}
-.auth-mascot-wrap .mascot svg{
-  width:100%!important;
-  height:100%!important;
-  display:block!important;
-  overflow:visible;
-}
-.premium-mascot::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:42%;
-  width:150px;
-  height:150px;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(218,241,222,.12),transparent 68%);
-  filter:blur(10px);
-  pointer-events:none;
-  animation:mascotGlow 3.8s ease-in-out infinite;
-}
-@keyframes welcomeMascotFloat{
-  0%,100%{transform:translateY(0) rotate(0deg)}
-  50%{transform:translateY(-8px) rotate(-1.2deg)}
-}
-@keyframes mascotGlow{
-  0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}
-  50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
-}
-.app .card{
-  animation:cardReveal .42s ease both;
-}
-.app .card:nth-child(2){animation-delay:.04s}
-.app .card:nth-child(3){animation-delay:.08s}
-.app .card:nth-child(4){animation-delay:.12s}
-@keyframes cardReveal{
-  from{opacity:0;transform:translateY(8px)}
-  to{opacity:1;transform:none}
-}
-.btn,.pill,.nav-item,.tap-card,.icon-btn{
-  transition:transform .18s ease,opacity .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease;
-}
-.btn:active,.pill:active,.tap-card:active,.icon-btn:active{transform:scale(.97)}
-.nav-item.active svg{animation:navPop .28s ease}
-@keyframes navPop{
-  0%{transform:scale(.88)}
-  65%{transform:scale(1.12)}
-  100%{transform:scale(1)}
-}
-@media (prefers-reduced-motion:reduce){
-  .auth-mascot-wrap .mascot,.premium-mascot::after,.app .card{animation:none!important}
-}
-
+/* ===== LUMI 3D REAL — host transparente para el modelo GLB/GLTF ===== */
+.lumi3d{display:block;width:126px;height:128px;max-width:none;touch-action:none;cursor:pointer;position:relative;z-index:2;background:transparent!important;overflow:visible}
+.lumi3d canvas{display:block;width:100%!important;height:100%!important;background:transparent!important}
+.lumi3d-welcome{width:220px!important;height:220px!important;cursor:default}
+.lumi3d:focus{outline:none}
+.page-mascot-art{overflow:visible}
+.lumi-speech{position:absolute;right:calc(100% - 18px);bottom:72%;max-width:220px;min-width:130px;padding:9px 12px;border:1px solid rgba(215,255,63,.24);border-radius:14px;background:rgba(5,8,10,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 26px rgba(0,0,0,.35),0 0 18px rgba(215,255,63,.08);color:#fff;font:600 12px/1.35 var(--font-body);opacity:0;transform:translateY(5px) scale(.98);pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:20}
+.lumi-speech.show{opacity:1;transform:translateY(0) scale(1)}
+.lumi-speech::after{content:"";position:absolute;right:8px;bottom:-6px;width:10px;height:10px;background:rgba(5,8,10,.88);border-right:1px solid rgba(215,255,63,.24);border-bottom:1px solid rgba(215,255,63,.24);transform:rotate(45deg)}
+.lumi-loading{position:absolute;inset:auto 0 2px;text-align:center;color:rgba(255,255,255,.34);font:500 9px/1 var(--font-body);pointer-events:none;opacity:.0}
+@media(max-width:390px){.page-mascot-art{width:104px!important;height:112px!important}.lumi3d{width:104px;height:112px}.lumi3d-welcome{width:190px!important;height:190px!important}.lumi-speech{max-width:180px;font-size:11px;right:calc(100% - 12px)}}
+@media(prefers-reduced-motion:reduce){.lumi-speech{transition:none}}
 </style>
 </head>
 <body>
@@ -500,19 +408,17 @@ body{color:#F5EBE1}
 
 <div class="auth-panel active" data-panel="welcome">
 <div class="auth-welcome-spacer"></div>
-<div class="welcome-premium-kicker">MI CONTROL FINANCIERO <span>◆</span></div>
-<div class="auth-mascot-wrap premium-mascot"><div class="mascot mascot-lg" id="welcomeMascot" data-state="idle"></div></div>
-<div class="auth-brand premium-brand">
-<h1 id="welcomeTitle">Hola 👋</h1>
-<p id="welcomeSubtitle">¿Cómo te llamas?</p>
+<div class="auth-mascot-wrap"><div class="welcome-mascot-art" id="welcomeMascot" data-state="idle"><div class="lumi3d lumi3d-welcome" role="img" aria-label="Lumi en 3D"></div></div><div class="welcome-graffiti-mark">MCF</div>
 </div>
-<div class="welcome-name-field">
-<input id="welcomeNameInput" type="text" maxlength="24" autocomplete="name" placeholder="Escribe tu nombre" aria-label="Tu nombre" onkeydown="if(event.key==='Enter')enterApp()">
+<div class="auth-brand">
+<h1 id="welcomeTitle">Mi Control Financiero</h1>
+<p id="welcomeSubtitle">Controla tus ingresos, gastos y presupuesto en un solo lugar.</p>
 </div>
 <div class="auth-welcome-actions">
-<button class="btn-auth-primary premium-enter" id="welcomeEnterBtn" onclick="enterApp()">INGRESAR <span>→</span></button>
+<button class="btn-auth-primary" id="welcomeEnterBtn" style="display:none" onclick="enterApp()">Ingresar →</button>
+<button class="btn-auth-primary" id="welcomeLoginBtn" onclick="setAuthMode('login');showAuthScreen('credentials')">Iniciar sesión</button>
+<button class="btn-auth-secondary" id="welcomeRegisterBtn" onclick="setAuthMode('register');showAuthScreen('credentials')">Crear cuenta</button>
 </div>
-<div class="welcome-microcopy">Tu dinero · tus decisiones · tu control</div>
 <div class="auth-welcome-spacer"></div>
 </div>
 
@@ -539,7 +445,7 @@ body{color:#F5EBE1}
 <div class="app" id="appRoot">
 <div class="topbar">
 <div class="wordmark"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2.5"></rect><path d="M2 10h20"></path><circle cx="17" cy="14.5" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>Mi Control Financiero</div>
-<button class="session-pill" id="authBtn" onclick="openAuth()" style="display:none">Iniciar sesión</button>
+<button class="session-pill" id="authBtn" onclick="openAuth()">Iniciar sesión</button>
 </div>
 
 <div id="offlineBanner" style="display:none">Sin conexión: los cambios se guardan en este dispositivo y se sincronizarán cuando vuelva la conexión.</div>
@@ -549,8 +455,12 @@ body{color:#F5EBE1}
 <!-- ===== INICIO ===== -->
 <section class="view active" data-view="home">
 <div class="home-header">
+<div class="page-mascot" data-mascot-page="home" aria-live="polite">
+  <div class="page-mascot-copy"><span class="page-mascot-name">Lumi</span><strong class="page-mascot-text">Hola, ¿cómo estás? 💚</strong><small class="page-mascot-hint">Aquí estoy para acompañarte.</small></div>
+  <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
+</div>
 <div><div class="home-greeting" id="homeGreeting">Hola 👋</div><div class="home-subgreeting">Aquí tienes un resumen de tus finanzas</div></div>
-<div class="mascot mascot-sm" id="homeMascot" data-state="idle"></div>
+<div class="luxury-badge">MCF <span>LIVE</span></div>
 </div>
 <div class="hero-card">
 <div class="hero-top">
@@ -576,12 +486,11 @@ body{color:#F5EBE1}
 </div>
 </div>
 
-<div class="bank-chips" id="homeBankChips" style="display:none"></div>
 
-<div class="bank-cta" onclick="connectBank()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')connectBank()">
-<div class="bank-cta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="9" rx="1.5"></rect><path d="M3 10 12 4l9 6"></path><path d="M7 14v2M12 14v2M17 14v2"></path></svg></div>
-<div><div class="bank-cta-title">Conectar banco</div><div class="bank-cta-sub">Sincroniza tus cuentas de forma segura con Belvo</div></div>
-<div class="bank-cta-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg></div>
+<div class="quick-actions">
+<button class="quick-action quick-income" onclick="openModal();setTimeout(()=>type.value='income',0)"><span>＋</span><b>Registrar ingreso</b></button>
+<button class="quick-action quick-expense" onclick="openModal()"><span>−</span><b>Registrar gasto</b></button>
+<button class="quick-action quick-view" onclick="showView('movs')"><span>↗</span><b>Ver movimientos</b></button>
 </div>
 
 <div class="card tap-card" onclick="showView('budget')">
@@ -589,19 +498,16 @@ body{color:#F5EBE1}
 <div id="budgetMini"></div>
 </div>
 
-<div class="card mascot-card" id="mascotCard" style="display:none">
-<div class="mascot mascot-md" id="mascotAvatar" data-state="idle"></div>
-<div class="mascot-bubble">
-<div class="mascot-label">Consejo de hoy</div>
-<div class="mascot-tip" id="mascotTipText"></div>
-<button class="btn-text mascot-more" id="mascotMoreBtn" style="display:none" onclick="rotateMascotTip()">Otro consejo</button>
-</div>
-</div>
+
 </section>
 
 <!-- ===== MOVIMIENTOS ===== -->
 <section class="view" data-view="movs">
 <div class="section-title"><h1 class="page-title" style="margin:0">Movimientos</h1><span id="count" class="muted"></span></div>
+<div class="page-mascot" data-mascot-page="movs" aria-live="polite">
+  <div class="page-mascot-copy"><span class="page-mascot-name">Lumi</span><strong class="page-mascot-text">Vamos a revisar tus movimientos.</strong><small class="page-mascot-hint">Cada movimiento cuenta.</small></div>
+  <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
+</div>
 <div class="pills">
 <button class="pill" id="periodWeekBtn" onclick="setPeriod('week')">Semana</button>
 <button class="pill active" id="periodMonthBtn" onclick="setPeriod('month')">Mes</button>
@@ -613,6 +519,10 @@ body{color:#F5EBE1}
 <!-- ===== ANÁLISIS ===== -->
 <section class="view" data-view="analysis">
 <h1 class="page-title">Análisis</h1>
+<div class="page-mascot" data-mascot-page="analysis" aria-live="polite">
+  <div class="page-mascot-copy"><span class="page-mascot-name">Lumi</span><strong class="page-mascot-text">Miremos tus números juntas.</strong><small class="page-mascot-hint">Aquí encontramos patrones.</small></div>
+  <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
+</div>
 <div class="card"><div class="section-title"><h2>Semana vs. mes</h2></div><div id="analysis"></div></div>
 <div class="card" style="margin-top:14px"><div class="section-title"><h2>Gastos por categoría</h2></div><div id="categories"></div></div>
 </section>
@@ -620,6 +530,10 @@ body{color:#F5EBE1}
 <!-- ===== PRESUPUESTO ===== -->
 <section class="view" data-view="budget">
 <h1 class="page-title">Presupuesto</h1>
+<div class="page-mascot" data-mascot-page="budget" aria-live="polite">
+  <div class="page-mascot-copy"><span class="page-mascot-name">Lumi</span><strong class="page-mascot-text">Ojo con ese presupuesto. 👀</strong><small class="page-mascot-hint">Te ayudo a mantenerlo bajo control.</small></div>
+  <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
+</div>
 <div class="card">
 <div class="ring-wrap"><div class="ring" id="budgetRing"><div class="ring-inner"><div><div class="ring-inner-text" id="budgetRingLabel">—</div><div class="ring-inner-sub">utilizado</div></div></div></div></div>
 <div id="budget"></div>
@@ -630,14 +544,15 @@ body{color:#F5EBE1}
 <!-- ===== CUENTA ===== -->
 <section class="view" data-view="account">
 <h1 class="page-title">Cuenta</h1>
+<div class="page-mascot" data-mascot-page="account" aria-live="polite">
+  <div class="page-mascot-copy"><span class="page-mascot-name">Lumi</span><strong class="page-mascot-text">Estoy aquí contigo.</strong><small class="page-mascot-hint">Tus datos y tu cuenta importan.</small></div>
+  <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
+</div>
 <div class="card">
 <div class="muted">Sesión iniciada como</div>
 <div id="accountEmail" style="font-weight:700;margin-top:4px">No has iniciado sesión</div>
 </div>
-<div class="card" style="margin-top:14px">
-<div class="section-title"><h2>Mis bancos</h2><button class="btn btn-accent small" onclick="connectBank()">Conectar banco</button></div>
-<div id="bankAccounts"><div class="empty">Inicia sesión para ver tus bancos conectados.</div></div>
-</div>
+
 <div class="card" style="margin-top:14px">
 <div class="section-title"><h2>Datos</h2></div>
 <div class="secondary-list">
@@ -734,6 +649,7 @@ function migrateData(raw){
  return{version,transactions,budget,budgetUpdatedAt,pendingDeletes}
 }
 let data=migrateData(JSON.parse(localStorage.getItem("finance_v1")||'{"version":1,"transactions":[],"budget":0}'));
+window.data=data;
 let period="month";
 const money=n=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -742,8 +658,7 @@ save();
 function inMonth(d){let x=new Date(d+"T12:00:00"),n=new Date();return x.getMonth()===n.getMonth()&&x.getFullYear()===n.getFullYear()}
 function inWeek(d){let x=new Date(d+"T12:00:00"),n=new Date();let day=n.getDay()||7;let monday=new Date(n);monday.setHours(12,0,0,0);monday.setDate(n.getDate()-day+1);let sunday=new Date(monday);sunday.setDate(monday.getDate()+6);return x>=monday&&x<=sunday}
 function render(){
- homeGreeting.textContent="Hola, "+(getDisplayName()||"Usuario")+" 👋";
- if(!homeMascot.dataset.built){homeMascot.innerHTML=MASCOT_SVG;homeMascot.dataset.built="1"}
+ homeGreeting.textContent="Hola"+(currentUser?", "+friendlyName(currentUser.email):"")+" 👋";
  let ts=data.transactions.slice().sort((a,b)=>b.date.localeCompare(a.date));
  let inc=data.transactions.filter(x=>x.type==="income"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
  let exp=data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
@@ -833,30 +748,6 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",
 // Mascota única y consistente (misma forma/color/cara en todos los estados; solo cambia
 // la cara visible y la animación CSS según data-state). Inspirada en figuras redondas verde
 // lima/pastel: cabeza redonda + cuerpo simple, ojos pequeños, boca sencilla.
-const MASCOT_SVG=`<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<radialGradient id="mgHead" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#F1FAEA"/><stop offset="55%" stop-color="#DCEFC7"/><stop offset="100%" stop-color="#B9DFA0"/></radialGradient>
-<linearGradient id="mgBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CBE8B4"/><stop offset="100%" stop-color="#A8D48C"/></linearGradient>
-</defs>
-<ellipse cx="60" cy="140" rx="26" ry="6" fill="#04120F" opacity=".18"/>
-<rect class="masc-arm-l" x="30" y="82" width="11" height="30" rx="5.5" fill="url(#mgBody)"/>
-<rect class="masc-arm-r" x="79" y="82" width="11" height="30" rx="5.5" fill="url(#mgBody)"/>
-<rect x="42" y="118" width="14" height="20" rx="6" fill="url(#mgBody)"/>
-<rect x="64" y="118" width="14" height="20" rx="6" fill="url(#mgBody)"/>
-<path d="M60 66c22 0 34 12 34 34 0 20-10 32-22 38-2 4-6 6-12 6s-10-2-12-6c-12-6-22-18-22-38 0-22 12-34 34-34Z" fill="url(#mgBody)"/>
-<circle cx="60" cy="42" r="34" fill="url(#mgHead)"/>
-<g class="masc-thought">
-<circle cx="24" cy="8" r="3.4" fill="#DAF1DE"/>
-<circle cx="16" cy="-3" r="2.4" fill="#DAF1DE"/>
-<circle cx="10" cy="-13" r="1.6" fill="#DAF1DE"/>
-</g>
-<g data-face="default"><circle cx="49" cy="40" r="2.6" fill="#16332A"/><circle cx="71" cy="40" r="2.6" fill="#16332A"/><path d="M52 53q8 5 16 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
-<g data-face="focused"><ellipse cx="49" cy="40" rx="2.6" ry="1.8" fill="#16332A"/><ellipse cx="71" cy="40" rx="2.6" ry="1.8" fill="#16332A"/><path d="M53 53h14" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
-<g data-face="happy"><path d="M45 40q4-5 8 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M67 40q4-5 8 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M50 51q10 9 20 0" stroke="#16332A" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>
-<g data-face="alert"><circle cx="49" cy="40" r="3.2" fill="#16332A"/><circle cx="71" cy="40" r="3.2" fill="#16332A"/><path d="M43 32q6-4 11-1" stroke="#16332A" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M77 32q-6-4-11-1" stroke="#16332A" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="60" cy="53" rx="4" ry="3" fill="#16332A"/></g>
-<g data-face="resting"><path d="M45 40q4 3 8 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M67 40q4 3 8 0" stroke="#16332A" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M54 54h12" stroke="#16332A" stroke-width="2" fill="none" stroke-linecap="round"/></g>
-</svg>`;
-
 const MONTH_MS=30; // solo para umbrales de "suficientes datos", no para cálculos financieros
 
 function monthKey(dateStr){return String(dateStr).slice(0,7)}
@@ -969,7 +860,7 @@ function computeMascotTips(ctx){
   ])});
  }
 
- // Regla 8: banco conectado pero nunca sincronizado (usa el cache de loadBankAccounts, sin fetch nuevo)
+ // Regla 8: datos bancarios históricos pendientes de sincronización
  const neverSynced=cachedBankAccounts.find(b=>b.belvo_status && !transactions.some(t=>t.bank_account_id===b.id));
  if(neverSynced){
   tips.push({state:"thinking",priority:3,text:`Conectaste un banco pero aún no traes tus movimientos. Prueba "Sincronizar movimientos" en Cuenta.`});
@@ -979,44 +870,13 @@ function computeMascotTips(ctx){
  return tips.length?tips:[{state:"idle",text:"Todo en orden por ahora. Sigue registrando tus movimientos para más consejos."}];
 }
 
-// Pinta la tarjeta de la mascota en Inicio con el consejo actual (o la oculta si no hay ninguno aplicable).
+// La mascota se muestra como compañera global en todas las pestañas.
 function renderMascotCard(){
- const exp=data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
- const inc=data.transactions.filter(x=>x.type==="income"&&inMonth(x.date)).reduce((s,x)=>s+x.amount,0);
- const wexp=data.transactions.filter(x=>x.type==="expense"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
- const winc=data.transactions.filter(x=>x.type==="income"&&inWeek(x.date)).reduce((s,x)=>s+x.amount,0);
- const cats={};
- data.transactions.filter(x=>x.type==="expense"&&inMonth(x.date)).forEach(x=>cats[x.category]=(cats[x.category]||0)+x.amount);
- const catTotal=Math.max(1,exp);
- mascotTips=computeMascotTips({inc,exp,winc,wexp,budget:data.budget||0,cats,catTotal,transactions:data.transactions});
- mascotTipIndex=0;
- paintMascotTip();
+  try{if(window.updateLumiFromData)window.updateLumiFromData()}catch(e){}
 }
-function paintMascotTip(){
- if(!mascotTips.length){mascotCard.style.display="none";return}
- const tip=mascotTips[mascotTipIndex];
- if(!mascotAvatar.dataset.built){mascotAvatar.innerHTML=MASCOT_SVG;mascotAvatar.dataset.built="1"}
- mascotAvatar.dataset.state=tip.state||"idle";
- if(homeMascot){if(!homeMascot.dataset.built){homeMascot.innerHTML=MASCOT_SVG;homeMascot.dataset.built="1"}homeMascot.dataset.state=tip.state||"idle"}
- mascotTipText.textContent=tip.text;
- mascotMoreBtn.style.display=mascotTips.length>1?"inline-flex":"none";
- mascotCard.style.display="flex";
-}
-// Breve celebración ante un evento positivo real (ej. registrar un ingreso). No cambia ningún
-// dato ni cálculo: solo anima la mascota unos segundos y luego vuelve a su estado real normal.
-function flashMascotCelebrate(){
- if(!mascotAvatar||mascotCard.style.display==="none")return;
- if(!mascotAvatar.dataset.built){mascotAvatar.innerHTML=MASCOT_SVG;mascotAvatar.dataset.built="1"}
- const restoreTo=(mascotTips[mascotTipIndex]&&mascotTips[mascotTipIndex].state)||"idle";
- mascotAvatar.dataset.state="celebrating";
- if(homeMascot)homeMascot.dataset.state="celebrating";
- setTimeout(()=>{mascotAvatar.dataset.state=restoreTo;if(homeMascot)homeMascot.dataset.state=restoreTo},1800);
-}
-function rotateMascotTip(){
- if(mascotTips.length<2)return;
- mascotTipIndex=(mascotTipIndex+1)%mascotTips.length;
- paintMascotTip();
-}
+function paintMascotTip(){}
+function flashMascotCelebrate(){try{if(window.lumiCelebrate)window.lumiCelebrate("¡Eso! Registraste un ingreso. 🎉")}catch(e){}}
+function rotateMascotTip(){}
 function populateCats(){category.innerHTML=CATS.map(c=>`<option>${c}</option>`).join("")}
 function openModal(id=null){populateCats();editId.value=id||"";modalTitle.textContent=id?"Editar movimiento":"Nuevo movimiento";if(id){let x=data.transactions.find(t=>t.id===id);if(!x){closeModal();return}type.value=x.type;amountInput.value=x.amount;description.value=x.description;category.value=x.category;date.value=x.date}else{type.value="expense";amountInput.value="";description.value="";date.value=today();category.value="Alimentación"}overlay.style.display="flex"}
 function closeModal(){overlay.style.display="none"}
@@ -1034,7 +894,7 @@ function saveTx(e){
  // Campos editables por el usuario, para cualquier movimiento (manual o importado):
  let obj={id,type:type.value,amount,description:desc,category:category.value,date:date.value,updated_at:new Date().toISOString()};
  if(existing&&existing.source==="bank_import"){
-  // Es un movimiento importado de Belvo: se conservan sus metadatos de importación tal cual.
+  // Es un movimiento bancario histórico: se conservan sus metadatos existentes.
   // Editar su categoría/descripción/monto/fecha NO lo convierte en manual.
   obj.source="bank_import";
   obj.external_id=existing.external_id;
@@ -1048,7 +908,7 @@ function saveTx(e){
  const isNewIncome=i<0&&obj.type==="income"; // solo celebra un ingreso nuevo real, nunca inventado
  i>=0?data.transactions[i]=obj:data.transactions.push(obj);
  save();if(currentUser)pushOneTransaction(obj);closeModal();render();
- if(isNewIncome)flashMascotCelebrate();
+ window.dispatchEvent(new CustomEvent("mcf:transaction-saved",{detail:{type:obj.type,isNew:isNewIncome}})); if(!isNewIncome&&window.lumiSay)window.lumiSay("talking","Anotado. Recuerda revisar cuánto llevas gastado este mes.");
 }
 function editTx(id){openModal(id)}
 function deleteTx(id){if(confirm("¿Eliminar este movimiento?")){data.transactions=data.transactions.filter(x=>x.id!==id);data.pendingDeletes=data.pendingDeletes.filter(p=>p.id!==id).concat([{id,deleted_at:new Date().toISOString()}]);save();render();if(currentUser)flushPendingDeletes()}}
@@ -1059,65 +919,28 @@ function updatePeriodPills(){
 }
 // ================== Navegación visual entre secciones (solo presentación) ==================
 // Cambia qué sección se ve, sin tocar ningún cálculo ni recargar datos salvo refrescar "Mis bancos".
-let currentView="home";
+let currentView="home"; window.currentView="home";
 let mascotTips=[]; // resultado de la última evaluación de reglas (solo lectura de datos existentes)
 let mascotTipIndex=0;
 let cachedBankAccounts=[]; // cache local de lo que loadBankAccounts() ya trae; no dispara peticiones nuevas
 function showView(v){
- currentView=v;
- document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
- document.querySelectorAll(".nav-item").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
- window.scrollTo(0,0);
- if(v==="account"||v==="home")loadBankAccounts()
+  const allowed=["home","movs","analysis","budget","account"];
+  if(!allowed.includes(v))v="home";
+  currentView=v;
+  window.currentView=v;
+  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
+  document.querySelectorAll(".nav-item").forEach(el=>el.classList.toggle("active",el.dataset.view===v));
+  window.scrollTo({top:0,behavior:"smooth"});
+  setTimeout(()=>{try{if(window.lumiSay){const msgs={home:["greeting","Hola, ¿cómo estás? 💚","Inicio"],movs:["talking","Vamos a revisar tus movimientos.","Movimientos"],analysis:["thinking","Miremos tus números juntas.","Análisis"],budget:["focused","Ojo con ese presupuesto. 👀","Presupuesto"],account:["idle","Estoy aquí para ayudarte con tu cuenta.","Cuenta"]};const m=msgs[v]||msgs.home;window.lumiSay(m[0],m[1],m[2]);}}catch(e){}},120);
 }
 // Lectura de solo lectura de bank_accounts (misma tabla y RLS ya existentes: auth.uid()=user_id).
 // No usa service_role, no crea Edge Function nueva, no cambia belvo-save-link ni dynamic-function.
 async function loadBankAccounts(){
- if(!sb||!currentUser){bankAccounts.innerHTML=`<div class="empty">Inicia sesión para ver tus bancos conectados.</div>`;if(homeBankChips)homeBankChips.style.display="none";return}
- try{
-  const{data:rows,error}=await sb.from("bank_accounts").select("id,alias,belvo_status,last4").eq("user_id",currentUser.id).order("created_at",{ascending:false});
-  if(error){bankAccounts.innerHTML=`<div class="empty">No se pudieron cargar tus bancos conectados.</div>`;return}
-  cachedBankAccounts=rows||[]; // reutilizado por la mascota; no dispara ninguna petición adicional
-  bankAccounts.innerHTML=(rows&&rows.length)?rows.map(r=>`<div class="bank-row" id="bank-row-${r.id}"><div class="bank-icon">🏦</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(r.alias)}</div><div class="tx-meta">${r.belvo_status?esc(r.belvo_status):"—"}${r.last4?" · ****"+esc(r.last4):""}</div><div class="muted" id="bank-sync-msg-${r.id}" style="margin-top:3px"></div></div>${r.belvo_status?`<button class="btn-text" onclick="syncBankTransactions('${r.id}',this)">Sincronizar movimientos</button>`:""}</div>`).join(""):`<div class="empty">Aún no has conectado ningún banco.</div>`
-  if(homeBankChips){
-   if(rows&&rows.length){
-    homeBankChips.innerHTML=rows.map(r=>`<div class="bank-chip"><span class="dot"></span><span class="chip-name">${esc(r.alias)}</span></div>`).join("");
-    homeBankChips.style.display="flex";
-   }else{homeBankChips.style.display="none"}
-  }
-  renderMascotCard(); // los bancos recién cargados pueden cambiar qué consejo aplica (regla 8)
- }catch(err){bankAccounts.innerHTML=`<div class="empty">No se pudieron cargar tus bancos conectados.</div>`}
+  // La integración bancaria queda fuera de la interfaz por ahora. No se consulta ni se pinta
+  // ninguna tarjeta bancaria, evitando errores cuando el diseño no contiene ese componente.
+  cachedBankAccounts=[];
+  return [];
 }
-// ETAPA 14 — dispara la importación de movimientos de una conexión Belvo ya guardada.
-// Solo envía bank_account_id (el id de nuestra tabla); el backend obtiene el resto por su cuenta.
-// No cambia connectBank()/belvoConnectSuccess() ni dynamic-function/belvo-save-link.
-async function syncBankTransactions(bankAccountId,btn){
- if(!sb||!currentUser)return;
- const msgEl=document.getElementById("bank-sync-msg-"+bankAccountId);
- const originalLabel=btn.textContent;
- btn.disabled=true;btn.textContent="Sincronizando…";
- if(msgEl)msgEl.textContent="";
- try{
-  const{data,error}=await sb.functions.invoke("belvo-import-transactions",{method:"POST",body:{bank_account_id:bankAccountId}});
-  if(error||!data||!data.ok){
-   if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
-  }else{
-   if(msgEl)msgEl.textContent=`Listo: ${data.inserted} nuevo(s), ${data.updated} actualizado(s)${data.skipped?`, ${data.skipped} omitido(s)`:""}.`;
-   await pullFromCloud(); // refresca los movimientos visibles con lo recién importado
-  }
- }catch(err){
-  if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
- }finally{
-  btn.disabled=false;btn.textContent=originalLabel;
- }
-}
-function openBudget(){budgetInput.value=data.budget||"";budgetOverlay.style.display="flex"}
-function closeBudget(){budgetOverlay.style.display="none"}
-function saveBudget(e){e.preventDefault();const b=Number(budgetInput.value);if(!isFinite(b)||b<0){alert("Ingresa un presupuesto válido (0 o mayor).");return}data.budget=b;data.budgetUpdatedAt=new Date().toISOString();save();if(currentUser)pushBudget();closeBudget();render()}
-function clearAll(){if(confirm("Esto eliminará todos los movimientos guardados en este dispositivo. ¿Continuar?")){const now=new Date().toISOString();data.pendingDeletes=data.pendingDeletes.concat(data.transactions.map(t=>({id:t.id,deleted_at:now})));data.transactions=[];data.budget=0;data.budgetUpdatedAt=now;save();render();if(currentUser){flushPendingDeletes();pushBudget()}}}
-function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`finanzas_backup_${today()}.json`;a.click();URL.revokeObjectURL(url)}
-// Valida estrictamente un archivo de backup antes de tocar cualquier dato existente.
-// Devuelve null si es válido, o un mensaje de error claro si algo no cuadra.
 function validateBackup(parsed){
  if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))return"El archivo no tiene un formato JSON válido.";
  if(parsed.version!==undefined&&typeof parsed.version!=="number")return"El campo 'version' del archivo es inválido.";
@@ -1194,7 +1017,7 @@ function applyImport(mode){
  const pdById=new Map();existingPD.concat(importedPD).concat(removedByReplace).forEach(p=>{const prev=pdById.get(p.id);if(!prev||new Date(p.deleted_at)>new Date(prev.deleted_at))pdById.set(p.id,p)});
  // Un id con eliminación pendiente (de cualquiera de los dos lados) debe permanecer eliminado: nunca puede "resucitar" al combinar/importar.
  nextTransactions=nextTransactions.filter(t=>!pdById.has(t.id));
- data=migrateData({version:1,transactions:nextTransactions,budget:nextBudget,budgetUpdatedAt:nextBudgetUpdatedAt,pendingDeletes:[...pdById.values()]});
+ data=migrateData({version:1,transactions:nextTransactions,budget:nextBudget,budgetUpdatedAt:nextBudgetUpdatedAt,pendingDeletes:[...pdById.values()]}); window.data=data;
  save();render();closeImportChoice();
  if(currentUser){
   // Solo se sincroniza lo que realmente cambió respecto a lo que había antes de importar (contenido completo, no solo updated_at).
@@ -1290,35 +1113,35 @@ async function doUpdatePassword(){
  authMsg.textContent="Contraseña actualizada. Ya puedes usar tu cuenta.";authMsg.className="auth-msg ok";
  setTimeout(closeAuth,1200);
 }
-// Pantalla de bienvenida visual: el nombre es local y no depende del correo.
-let sessionGateDismissed=false;
-const WELCOME_GREETS=["Tu dinero, tus decisiones, bajo control.","Un vistazo limpio a tus finanzas.","Todo tu control financiero en un solo lugar."];
+// Muestra la app autenticada o la bienvenida, según haya sesión o no.
+let sessionGateDismissed=false; // se resetea en cada apertura de la app (no persiste), y también al cerrar sesión
+const WELCOME_GREETS=["¿Cómo estás hoy?","Qué bueno verte de nuevo.","Vamos a ver tus finanzas."];
+const WELCOME_TAGLINES=["Tu dinero, tus decisiones, bajo control.","Un vistazo rápido a tus finanzas.","Todo tu control financiero en un solo lugar."];
+// Nombre a mostrar: se deriva del correo real de la cuenta (nunca se inventa un nombre).
 function friendlyName(email){
  if(!email)return"";
  const n=email.split("@")[0].split(/[._\-0-9]+/)[0];
  return n?n.charAt(0).toUpperCase()+n.slice(1).toLowerCase():""
 }
-function getDisplayName(){return (localStorage.getItem("mcf_display_name")||"").trim()}
 function renderWelcomePanel(){
- if(!welcomeMascot.dataset.built){welcomeMascot.innerHTML=MASCOT_SVG;welcomeMascot.dataset.built="1"}
- const saved=getDisplayName();
- welcomeTitle.textContent=saved?"Hola, "+saved+" 👋":"Hola 👋";
- welcomeSubtitle.textContent=saved?WELCOME_GREETS[new Date().getDate()%WELCOME_GREETS.length]:"¿Cómo te llamas?";
- if(welcomeNameInput){welcomeNameInput.value=saved;}
- welcomeMascot.dataset.state=saved?"greeting":"idle";
+ const seed=new Date().getDate();
+ if(!welcomeMascot.dataset.built){welcomeMascot.dataset.built="1"}
+ if(currentUser&&!sessionGateDismissed){
+  const name=friendlyName(currentUser.email);
+  welcomeTitle.textContent="Hola"+(name?", "+name:"")+" 👋";
+  welcomeSubtitle.textContent=WELCOME_GREETS[seed%WELCOME_GREETS.length]+" "+WELCOME_TAGLINES[seed%WELCOME_TAGLINES.length];
+  welcomeEnterBtn.style.display="";welcomeLoginBtn.style.display="none";welcomeRegisterBtn.style.display="none";
+  welcomeMascot.dataset.state="greeting";
+ }else{
+  welcomeTitle.textContent="Mi Control Financiero";
+  welcomeSubtitle.textContent="Controla tus ingresos, gastos y presupuesto en un solo lugar.";
+  welcomeEnterBtn.style.display="none";welcomeLoginBtn.style.display="";welcomeRegisterBtn.style.display="";
+  welcomeMascot.dataset.state="idle";
+ }
 }
-function enterApp(){
- const typed=(welcomeNameInput&&welcomeNameInput.value||"").trim();
- const name=typed || getDisplayName() || "Usuario";
- localStorage.setItem("mcf_display_name",name);
- sessionGateDismissed=true;
- appRoot.style.display="block";
- authFlow.classList.remove("show");
- render();
- loadBankAccounts();
-}
+function enterApp(){sessionGateDismissed=true;toggleAuthUI(true)}
 function toggleAuthUI(isAuthed){
- const showApp=sessionGateDismissed;
+ const showApp=isAuthed&&sessionGateDismissed;
  appRoot.style.display=showApp?"block":"none";
  authFlow.classList.toggle("show",!showApp);
  if(!showApp){showAuthScreen("welcome");renderWelcomePanel()}
@@ -1434,38 +1257,12 @@ async function pushBudget(){
   return true
  }catch(err){syncStatus.textContent="No se pudo guardar el presupuesto en la nube (se guardó localmente).";return false}
 }
-// ================== Belvo: conexión bancaria de solo lectura (ETAPA 13) ==================
-// Flujo: usuario autenticado -> Edge Function "dynamic-function" (ETAPA 13A, genera el
-// access_token de Belvo) -> Belvo Connect Widget -> callback de éxito (link, institution)
-// -> Edge Function "belvo-save-link" (ETAPA 13B) -> guarda la conexión en bank_accounts.
-// Ningún secreto de Belvo ni la service_role de Supabase pasan nunca por este archivo:
-// sb.functions.invoke() adjunta automáticamente el token de sesión del usuario.
-// Esta etapa NO importa cuentas ni movimientos todavía.
-async function connectBank(){
- if(!sb||!currentUser){alert("Inicia sesión para conectar tu banco.");return}
- if(!navigator.onLine){alert("Necesitas conexión a internet para conectar tu banco.");return}
- if(typeof belvoSDK==="undefined"){alert("No se pudo cargar el widget de Belvo. Intenta de nuevo en unos segundos.");return}
- try{
-  const{data,error}=await sb.functions.invoke("dynamic-function",{method:"POST"});
-  if(error||!data||!data.access_token){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.");return}
-  belvoSDK.createWidget(data.access_token,{
-   callback:(link,institution)=>belvoConnectSuccess(link,institution),
-   onExit:()=>{},
-   onEvent:()=>{}
-  }).build()
- }catch(err){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.")}
-}
-async function belvoConnectSuccess(link,institution){
- try{
-  const{data,error}=await sb.functions.invoke("belvo-save-link",{method:"POST",body:{link_id:link,institution:institution||null}});
-  if(error||!data||!data.success){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.");return}
-  alert("¡Banco conectado correctamente!");
-  loadBankAccounts()
- }catch(err){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.")}
-}
+// ================== Bancos: desactivado ==================
+// La app actual funciona exclusivamente con movimientos manuales.
+// No se carga ni se invoca ningún proveedor bancario externo.
+function loadBankAccounts(){ cachedBankAccounts=[]; }
+
 function updateOnlineStatus(){offlineBanner.style.display=navigator.onLine?"none":"block"}
-// Garantía visual: la mascota de bienvenida se pinta cuando MASCOT_SVG ya está disponible.
-try{if(typeof renderWelcomePanel==="function")renderWelcomePanel()}catch(e){console.warn("Mascota de bienvenida:",e)}
 function manualSync(){
  if(!sb){alert("Configura SUPABASE_URL/SUPABASE_ANON_KEY para poder sincronizar.");return}
  if(!currentUser){alert("Inicia sesión para sincronizar con la nube.");return}
@@ -1489,8 +1286,7 @@ try{
    accountEmail.textContent=currentUser?currentUser.email:"No has iniciado sesión";
    toggleAuthUI(!!currentUser);
    if(currentUser)pullFromCloud();else syncStatus.textContent="";
-   if(currentView==="account")loadBankAccounts()
-  });
+     });
   sb.auth.getSession().then(({data:{session}})=>{
    currentUser=session?session.user:null;
    if(currentUser){authBtn.textContent="Salir ("+currentUser.email+")";authBtn.onclick=doSignOut;accountEmail.textContent=currentUser.email;toggleAuthUI(true);pullFromCloud()}
@@ -1512,6 +1308,122 @@ try{
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>{navigator.serviceWorker.register("service-worker.js").catch(()=>{})})
 }
+</script>
+
+<script type="module">
+/* ===== LUMI REAL 3D ENGINE =====
+   One shared GLB/GLTF model + one Three.js scene/canvas.
+   No CSS 3D, no SVG mascot, no PNG fallback.
+   Required asset: /assets/lumi/Lumi.glb
+*/
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js';
+
+(function(){
+'use strict';
+const MODEL_URL=new URL('./assets/lumi/Lumi.glb', document.baseURI).href;
+const PAGE_LABELS={home:'Inicio',movs:'Movimientos',analysis:'Análisis',budget:'Presupuesto',account:'Cuenta'};
+const STATES=['idle','greeting','happy','thinking','talking','celebrating','warning','sad','resting','sitting','focused','sleeping'];
+const rootSlot=document.querySelector('.page-mascot[data-mascot-page="home"] .lumi3d');
+const welcomeSlot=document.querySelector('.welcome-mascot-art .lumi3d-welcome');
+const slots={};
+document.querySelectorAll('.page-mascot .lumi3d').forEach(el=>{const page=el.closest('.page-mascot')?.dataset.mascotPage;if(page)slots[page]=el});
+
+class LumiBehaviorController{
+ constructor(){this.currentState='idle';this.currentMessage='';this.currentView=window.currentView||'home';this.lastInteraction=0;this.idleTimer=0;this.reactionQueue=[];this.speechTimer=null;this.cooldowns=new Map();this.previousContext='';}
+ context(){
+  const d=window.data||{}, tx=Array.isArray(d.transactions)?d.transactions:[], now=new Date(), month=now.toISOString().slice(0,7);
+  const mt=tx.filter(t=>String(t.date||'').slice(0,7)===month);
+  const inc=mt.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount||0),0);
+  const exp=mt.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount||0),0);
+  const budget=Number(d.budget||0);
+  const cats={}; mt.filter(t=>t.type==='expense').forEach(t=>cats[t.category]=(cats[t.category]||0)+Number(t.amount||0));
+  const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  return {tx,mt,inc,exp,budget,pct:budget?exp/budget:0,cats,top,hasAny:tx.length>0};
+ }
+ can(key,ms=20000){const now=Date.now(),last=this.cooldowns.get(key)||0;if(now-last<ms)return false;this.cooldowns.set(key,now);return true;}
+ chooseForView(){
+  const c=this.context(),v=this.currentView;
+  if(!c.hasAny)return ['resting','Estoy esperando tus primeros movimientos. Cuando quieras empezamos.'];
+  if(v==='budget'&&c.budget>0&&c.exp>c.budget)return ['warning','Ey... nos estamos pasando del presupuesto. 👀'];
+  if(v==='budget'&&c.budget>0&&c.pct>=.8)return ['focused',`Ya llevas ${Math.round(c.pct*100)}% del presupuesto. Podemos vigilarlo juntos.`];
+  if(v==='analysis'&&c.top&&c.top[1]>c.exp*.4)return ['thinking',`Veo que has gastado bastante en ${c.top[0]}. ¿Quieres que la revisemos?`];
+  if(v==='home'&&c.inc>0&&c.exp<c.inc*.7)return ['happy','¡Eso me gusta! Este mes estás controlando mejor tus gastos.'];
+  if(v==='movs')return ['focused','Estoy revisando tus movimientos para encontrar patrones útiles.'];
+  if(v==='account')return ['idle','Estoy aquí para acompañarte con tu cuenta.'];
+  return ['idle','Estoy pendiente de tus finanzas.'];
+ }
+ say(state,msg,duration=5200){
+  if(!STATES.includes(state))state='idle';this.currentState=state;this.currentMessage=msg;this.lastInteraction=Date.now();
+  window.dispatchEvent(new CustomEvent('lumi:state',{detail:{state,msg,duration}}));
+  clearTimeout(this.speechTimer);this.speechTimer=setTimeout(()=>{this.currentState='idle';window.dispatchEvent(new CustomEvent('lumi:state',{detail:{state:'idle',msg:'',duration:0}}))},duration);
+ }
+ onView(v){this.currentView=v||'home';const [state,msg]=this.chooseForView();if(this.can('view:'+this.currentView,9000))this.say(state,msg,6500);}
+ onTransaction(type){if(type==='income')this.say('celebrating','¡Excelente! Registraste un ingreso. 🎉',7000);else this.say('talking','Anotado. Recuerda revisar cuánto llevas gastado este mes.',5600);}
+ onBudget(){const c=this.context();if(c.budget&&c.exp>c.budget)this.say('warning','Ey... nos estamos pasando del presupuesto. 👀',7000);else this.say('happy','Presupuesto actualizado. Vamos a vigilarlo juntos. 🎯',5200);}
+ idle(){if(document.hidden)return;if(Date.now()-this.lastInteraction<18000)return;if(this.can('idle',35000)){const [state,msg]=this.chooseForView();this.say(state,msg,5200)}}
+}
+
+class Lumi3D{
+ constructor(){this.controller=new LumiBehaviorController();this.canvas=document.createElement('canvas');this.canvas.setAttribute('aria-label','Lumi, mascota 3D financiera');this.canvas.tabIndex=0;this.renderer=null;this.scene=null;this.camera=null;this.model=null;this.mixer=null;this.clips=new Map();this.clock=new THREE.Clock();this.currentAction=null;this.activeSlot=null;this.speech=null;this.speechTimer=null;this.loaded=false;this.loadError=false;this.running=true;this.reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;this._raf=0;this._resizeObs=null;}
+ async init(){
+  this.renderer=new THREE.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:!this.reduced,powerPreference:'low-power'});
+  this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, this.reduced?1:1.5));this.renderer.setClearColor(0,0);
+  this.renderer.outputColorSpace=THREE.SRGBColorSpace;
+  this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(28,1,.01,100);this.camera.position.set(0,1.15,3.4);
+  const hemi=new THREE.HemisphereLight(0xffffff,0x101820,1.5);this.scene.add(hemi);
+  const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(2.2,3.4,3.5);key.castShadow=true;this.scene.add(key);
+  const rim=new THREE.DirectionalLight(0x9ffcff,1.0);rim.position.set(-2,2,1);this.scene.add(rim);
+  this.speech=document.createElement('div');this.speech.className='lumi-speech';this.speech.setAttribute('aria-live','polite');
+  const loader=new GLTFLoader();
+  try{
+   const gltf=await loader.loadAsync(MODEL_URL);this.model=gltf.scene;this.model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material)o.material.transparent=false}});this.scene.add(this.model);
+   const box=new THREE.Box3().setFromObject(this.model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+   const max=Math.max(size.x,size.y,size.z)||1;this.model.scale.setScalar(1.65/max);this.model.position.sub(center.multiplyScalar(1.65/max));this.model.position.y+=.05;
+   this.mixer=new THREE.AnimationMixer(this.model);(gltf.animations||[]).forEach(clip=>this.clips.set(clip.name.toLowerCase(),clip));this.loaded=true;
+   this.play('idle');
+  }catch(err){this.loadError=true;console.error('Lumi GLB no disponible:',err);}
+  this.bind();this.mountForView(window.currentView||'home');this.loop();return this;
+ }
+ bind(){
+  window.addEventListener('lumi:state',e=>this.applyState(e.detail.state,e.detail.msg,e.detail.duration));
+  document.addEventListener('visibilitychange',()=>{this.running=!document.hidden;if(!this.running){cancelAnimationFrame(this._raf)}else this.loop()});
+  window.addEventListener('resize',()=>this.resize());
+  window.addEventListener('lumi:view',e=>this.mountForView(e.detail));
+  this.canvas.addEventListener('click',()=>this.controller.onView(this.controller.currentView));
+ }
+ mountForView(view){
+  const slot=slots[view]||rootSlot;if(!slot||!this.canvas)return;this.activeSlot=slot;if(this.canvas.parentElement!==slot){slot.innerHTML='';slot.appendChild(this.canvas);slot.appendChild(this.speech)}this.resize();}
+ resize(){if(!this.activeSlot||!this.renderer)return;const r=this.activeSlot.getBoundingClientRect();const w=Math.max(1,r.width),h=Math.max(1,r.height);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix()}
+ findClip(state){const aliases={idle:['idle','breathing','rest'],greeting:['greeting','wave','hello'],happy:['happy','smile'],thinking:['thinking','think'],talking:['talking','talk'],celebrating:['celebrating','celebrate','jump'],warning:['warning','scold','alert'],sad:['sad'],resting:['resting','rest'],sitting:['sitting','sit'],focused:['focused','focus'],sleeping:['sleeping','sleep']};for(const n of (aliases[state]||[state])){if(this.clips.has(n))return this.clips.get(n)}return null;}
+ play(state){if(!this.mixer||!this.loaded)return;const clip=this.findClip(state)||this.findClip('idle');if(!clip)return;const next=this.mixer.clipAction(clip);next.reset().fadeIn(.22).play();if(this.currentAction&&this.currentAction!==next)this.currentAction.fadeOut(.22);this.currentAction=next;}
+ applyState(state,msg,duration){this.play(state);if(msg){this.speech.textContent=msg;this.speech.classList.add('show');clearTimeout(this.speechTimer);this.speechTimer=setTimeout(()=>this.speech.classList.remove('show'),Math.max(900,duration||5200))}else this.speech.classList.remove('show');}
+ loop(){if(!this.running)return;this._raf=requestAnimationFrame(()=>this.loop());const dt=Math.min(this.clock.getDelta(),.05);if(this.mixer&&this.loaded)this.mixer.update(this.reduced?Math.min(dt,.033):dt);if(this.loaded)this.renderer.render(this.scene,this.camera);}
+}
+
+const lumi=new Lumi3D();
+window.LumiBehaviorController=LumiBehaviorController;
+window.Lumi3D=lumi;
+window.lumiSay=(state,msg)=>lumi.controller.say(state,msg);
+window.lumiCelebrate=msg=>lumi.controller.say('celebrating',msg||'¡Excelente! 🎉');
+window.lumiScold=msg=>lumi.controller.say('warning',msg||'Ey... revisemos el presupuesto. 👀');
+window.updateLumiFromData=()=>lumi.controller.onView(window.currentView||'home');
+
+const oldShowView=window.showView;
+if(typeof oldShowView==='function')window.showView=function(v){oldShowView(v);window.dispatchEvent(new CustomEvent('lumi:view',{detail:v}));setTimeout(()=>lumi.controller.onView(v),180)};
+window.addEventListener('mcf:transaction-saved',e=>lumi.controller.onTransaction(e.detail?.type));
+window.addEventListener('mcf:budget-warning',e=>lumi.controller.say('warning',e.detail||'Ey... nos estamos pasando del presupuesto. 👀'));
+window.addEventListener('lumi:transaction',e=>lumi.controller.onTransaction(e.detail));
+window.addEventListener('lumi:budget',()=>lumi.controller.onBudget());
+setInterval(()=>lumi.controller.idle(),12000);
+
+lumi.init().then(()=>{
+  const c=lumi.controller;c.onView(window.currentView||'home');
+  // Welcome uses the exact same canvas/model; it is only moved while the auth screen is visible.
+  const observer=new MutationObserver(()=>{const auth=document.getElementById('authFlow');const visible=auth&&auth.classList.contains('show');if(visible&&welcomeSlot&&lumi.canvas.parentElement!==welcomeSlot){lumi.activeSlot=welcomeSlot;welcomeSlot.innerHTML='';welcomeSlot.appendChild(lumi.canvas);welcomeSlot.appendChild(lumi.speech);lumi.resize();c.say('greeting','¡Hola! ¿Cómo estás? Vamos a revisar tus finanzas.',6500)}else if(!visible){lumi.mountForView(window.currentView||'home')}});const auth=document.getElementById('authFlow');if(auth)observer.observe(auth,{attributes:true,attributeFilter:['class']});
+}).catch(err=>console.error('No se pudo inicializar Lumi 3D:',err));
+})();
 </script>
 </body>
 </html>
