@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.belvo.io/belvo-widget-1-stable.js" async></script>
 <style>
 /* ===== Tokens ===== */
  :root{
@@ -103,6 +104,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .auth-welcome-actions{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
 .btn-auth-primary{background:var(--a-lime);color:#0B2B26;font-weight:700;font-size:15.5px;padding:16px;border-radius:18px;text-align:center;width:100%;box-shadow:0 10px 26px rgba(218,241,222,.18)}
 .btn-auth-primary:active{transform:scale(.98)}
+.auth-input{width:100%;background:var(--a-surface2);color:var(--a-text);border:1px solid var(--a-border);border-radius:16px;padding:15px 16px;font-size:15.5px;margin-bottom:10px;box-sizing:border-box;font-family:inherit}
+.auth-input:focus{outline:none;border-color:var(--a-lime)}
 .btn-auth-secondary{background:transparent;color:var(--a-text2);border:1px solid var(--a-border);font-weight:600;font-size:14.5px;padding:13px;border-radius:16px;text-align:center;width:100%}
 .btn-auth-secondary:active{transform:scale(.98)}
 .auth-title-block{margin-bottom:26px}
@@ -350,6 +353,8 @@ body{background:radial-gradient(55% 38% at 8% 0%,rgba(53,215,255,.08),transparen
 .companion{right:max(10px,calc((100vw - 480px)/2 + 8px));bottom:calc(var(--nav-h) + 10px);gap:7px}.companion-character{width:92px;height:122px;display:flex;align-items:flex-end;justify-content:center}.companion-character img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55));image-rendering:auto}.companion-bubble{width:min(228px,62vw);background:linear-gradient(145deg,rgba(5,26,31,.98),rgba(2,10,13,.98));border:1px solid rgba(53,215,255,.38);border-radius:18px 18px 5px 18px}.companion-bubble strong{color:var(--green);font-family:var(--font-graffiti);font-size:17px}.companion-close{background:#06151A;border-color:rgba(53,215,255,.3)}
 .companion[data-state="sitting"] .companion-character{transform:translateY(8px) scale(.93)}
 @media(max-width:520px){.companion{right:7px}.companion-bubble{width:min(205px,58vw)}.companion-character{width:82px;height:110px}}
+/* Hide obsolete bank presentation; backend remains untouched. */
+.bank-cta,.bank-chips{display:none!important}
 
 
 /* ===== MASCOTAS AUTÓNOMAS POR PÁGINA ===== */
@@ -415,9 +420,8 @@ body{background:radial-gradient(55% 38% at 8% 0%,rgba(53,215,255,.08),transparen
 <p id="welcomeSubtitle">Controla tus ingresos, gastos y presupuesto en un solo lugar.</p>
 </div>
 <div class="auth-welcome-actions">
-<button class="btn-auth-primary" id="welcomeEnterBtn" style="display:none" onclick="enterApp()">Ingresar →</button>
-<button class="btn-auth-primary" id="welcomeLoginBtn" onclick="setAuthMode('login');showAuthScreen('credentials')">Iniciar sesión</button>
-<button class="btn-auth-secondary" id="welcomeRegisterBtn" onclick="setAuthMode('register');showAuthScreen('credentials')">Crear cuenta</button>
+<input id="welcomeNameInput" class="auth-input" type="text" maxlength="40" placeholder="Escribe tu nombre" autocomplete="given-name" style="display:none">
+<button class="btn-auth-primary" id="welcomeEnterBtn" onclick="enterApp()">Entrar →</button>
 </div>
 <div class="auth-welcome-spacer"></div>
 </div>
@@ -445,7 +449,7 @@ body{background:radial-gradient(55% 38% at 8% 0%,rgba(53,215,255,.08),transparen
 <div class="app" id="appRoot">
 <div class="topbar">
 <div class="wordmark"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2.5"></rect><path d="M2 10h20"></path><circle cx="17" cy="14.5" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>Mi Control Financiero</div>
-<button class="session-pill" id="authBtn" onclick="openAuth()">Iniciar sesión</button>
+<button class="session-pill" id="authBtn" onclick="changeLocalName()">Cambiar nombre</button>
 </div>
 
 <div id="offlineBanner" style="display:none">Sin conexión: los cambios se guardan en este dispositivo y se sincronizarán cuando vuelva la conexión.</div>
@@ -549,7 +553,13 @@ body{background:radial-gradient(55% 38% at 8% 0%,rgba(53,215,255,.08),transparen
   <div class="page-mascot-art"><div class="lumi3d" role="img" aria-label="Lumi en 3D"></div></div>
 </div>
 <div class="card">
-<div class="muted">Sesión iniciada como</div>
+<div class="muted">Tu nombre</div>
+<div id="accountLocalName" style="font-weight:700;margin-top:4px"></div>
+<button class="btn-ghost" style="margin-top:10px" onclick="changeLocalName()">Cambiar nombre</button>
+</div>
+
+<div class="card" style="margin-top:14px">
+<div class="muted">Sincronización en la nube (opcional)</div>
 <div id="accountEmail" style="font-weight:700;margin-top:4px">No has iniciado sesión</div>
 </div>
 
@@ -860,7 +870,7 @@ function computeMascotTips(ctx){
   ])});
  }
 
- // Regla 8: datos bancarios históricos pendientes de sincronización
+ // Regla 8: banco conectado pero nunca sincronizado (usa el cache de loadBankAccounts, sin fetch nuevo)
  const neverSynced=cachedBankAccounts.find(b=>b.belvo_status && !transactions.some(t=>t.bank_account_id===b.id));
  if(neverSynced){
   tips.push({state:"thinking",priority:3,text:`Conectaste un banco pero aún no traes tus movimientos. Prueba "Sincronizar movimientos" en Cuenta.`});
@@ -894,7 +904,7 @@ function saveTx(e){
  // Campos editables por el usuario, para cualquier movimiento (manual o importado):
  let obj={id,type:type.value,amount,description:desc,category:category.value,date:date.value,updated_at:new Date().toISOString()};
  if(existing&&existing.source==="bank_import"){
-  // Es un movimiento bancario histórico: se conservan sus metadatos existentes.
+  // Es un movimiento importado de Belvo: se conservan sus metadatos de importación tal cual.
   // Editar su categoría/descripción/monto/fecha NO lo convierte en manual.
   obj.source="bank_import";
   obj.external_id=existing.external_id;
@@ -941,6 +951,36 @@ async function loadBankAccounts(){
   cachedBankAccounts=[];
   return [];
 }
+// ETAPA 14 — dispara la importación de movimientos de una conexión Belvo ya guardada.
+// Solo envía bank_account_id (el id de nuestra tabla); el backend obtiene el resto por su cuenta.
+// No cambia connectBank()/belvoConnectSuccess() ni dynamic-function/belvo-save-link.
+async function syncBankTransactions(bankAccountId,btn){
+ if(!sb||!currentUser)return;
+ const msgEl=document.getElementById("bank-sync-msg-"+bankAccountId);
+ const originalLabel=btn.textContent;
+ btn.disabled=true;btn.textContent="Sincronizando…";
+ if(msgEl)msgEl.textContent="";
+ try{
+  const{data,error}=await sb.functions.invoke("belvo-import-transactions",{method:"POST",body:{bank_account_id:bankAccountId}});
+  if(error||!data||!data.ok){
+   if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
+  }else{
+   if(msgEl)msgEl.textContent=`Listo: ${data.inserted} nuevo(s), ${data.updated} actualizado(s)${data.skipped?`, ${data.skipped} omitido(s)`:""}.`;
+   await pullFromCloud(); // refresca los movimientos visibles con lo recién importado
+  }
+ }catch(err){
+  if(msgEl)msgEl.textContent="No se pudieron sincronizar los movimientos. Intenta de nuevo.";
+ }finally{
+  btn.disabled=false;btn.textContent=originalLabel;
+ }
+}
+function openBudget(){budgetInput.value=data.budget||"";budgetOverlay.style.display="flex"}
+function closeBudget(){budgetOverlay.style.display="none"}
+function saveBudget(e){e.preventDefault();const b=Number(budgetInput.value);if(!isFinite(b)||b<0){alert("Ingresa un presupuesto válido (0 o mayor).");return}data.budget=b;data.budgetUpdatedAt=new Date().toISOString();save();if(currentUser)pushBudget();closeBudget();render();if(window.lumiSay)window.lumiSay("happy","Presupuesto actualizado. Ahora tenemos una meta clara. 🎯","Lumi · presupuesto guardado")}
+function clearAll(){if(confirm("Esto eliminará todos los movimientos guardados en este dispositivo. ¿Continuar?")){const now=new Date().toISOString();data.pendingDeletes=data.pendingDeletes.concat(data.transactions.map(t=>({id:t.id,deleted_at:now})));data.transactions=[];data.budget=0;data.budgetUpdatedAt=now;save();render();if(currentUser){flushPendingDeletes();pushBudget()}}}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`finanzas_backup_${today()}.json`;a.click();URL.revokeObjectURL(url)}
+// Valida estrictamente un archivo de backup antes de tocar cualquier dato existente.
+// Devuelve null si es válido, o un mensaje de error claro si algo no cuadra.
 function validateBackup(parsed){
  if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))return"El archivo no tiene un formato JSON válido.";
  if(parsed.version!==undefined&&typeof parsed.version!=="number")return"El campo 'version' del archivo es inválido.";
@@ -1123,25 +1163,46 @@ function friendlyName(email){
  const n=email.split("@")[0].split(/[._\-0-9]+/)[0];
  return n?n.charAt(0).toUpperCase()+n.slice(1).toLowerCase():""
 }
+function getLocalName(){return(localStorage.getItem("mcf_display_name")||"").trim()}
 function renderWelcomePanel(){
  const seed=new Date().getDate();
  if(!welcomeMascot.dataset.built){welcomeMascot.dataset.built="1"}
- if(currentUser&&!sessionGateDismissed){
-  const name=friendlyName(currentUser.email);
-  welcomeTitle.textContent="Hola"+(name?", "+name:"")+" 👋";
+ const name=getLocalName();
+ if(name){
+  welcomeTitle.textContent="Hola, "+name+" 👋";
   welcomeSubtitle.textContent=WELCOME_GREETS[seed%WELCOME_GREETS.length]+" "+WELCOME_TAGLINES[seed%WELCOME_TAGLINES.length];
-  welcomeEnterBtn.style.display="";welcomeLoginBtn.style.display="none";welcomeRegisterBtn.style.display="none";
+  welcomeNameInput.style.display="none";welcomeEnterBtn.textContent="Entrar →";
   welcomeMascot.dataset.state="greeting";
  }else{
-  welcomeTitle.textContent="Mi Control Financiero";
-  welcomeSubtitle.textContent="Controla tus ingresos, gastos y presupuesto en un solo lugar.";
-  welcomeEnterBtn.style.display="none";welcomeLoginBtn.style.display="";welcomeRegisterBtn.style.display="";
+  welcomeTitle.textContent="Hola, ¿cómo te llamas?";
+  welcomeSubtitle.textContent="Así podré saludarte cada vez que abras la app.";
+  welcomeNameInput.style.display="";welcomeNameInput.value="";welcomeEnterBtn.textContent="Entrar →";
   welcomeMascot.dataset.state="idle";
  }
 }
-function enterApp(){sessionGateDismissed=true;toggleAuthUI(true)}
+function paintAccountLocalName(){const el=document.getElementById("accountLocalName");if(el)el.textContent=getLocalName()||"(sin nombre)"}
+function enterApp(){
+ if(welcomeNameInput.style.display!=="none"){
+  const typed=welcomeNameInput.value.trim();
+  if(!typed){welcomeNameInput.focus();return}
+  localStorage.setItem("mcf_display_name",typed);
+ }
+ sessionGateDismissed=true;
+ toggleAuthUI(true);
+ if(sb)loadBankAccounts();
+}
+function changeLocalName(){
+ const current=getLocalName();
+ const next=(prompt("¿Cómo quieres que te llame?",current)||"").trim();
+ if(!next)return;
+ localStorage.setItem("mcf_display_name",next);
+ if(typeof paintHomeGreeting==="function")try{paintHomeGreeting()}catch(e){}
+}
 function toggleAuthUI(isAuthed){
- const showApp=isAuthed&&sessionGateDismissed;
+ // La entrada a la app depende ÚNICAMENTE de si ya existe un nombre local
+ // (mcf_display_name). Supabase puede seguir usándose para sincronizar en
+ // segundo plano, pero nunca decide si se puede entrar o no.
+ const showApp=!!getLocalName();
  appRoot.style.display=showApp?"block":"none";
  authFlow.classList.toggle("show",!showApp);
  if(!showApp){showAuthScreen("welcome");renderWelcomePanel()}
@@ -1257,15 +1318,38 @@ async function pushBudget(){
   return true
  }catch(err){syncStatus.textContent="No se pudo guardar el presupuesto en la nube (se guardó localmente).";return false}
 }
-// ================== Bancos: desactivado ==================
-// La app actual funciona exclusivamente con movimientos manuales.
-// No se carga ni se invoca ningún proveedor bancario externo.
-function loadBankAccounts(){ cachedBankAccounts=[]; }
-
+// ================== Belvo: conexión bancaria de solo lectura (ETAPA 13) ==================
+// Flujo: usuario autenticado -> Edge Function "dynamic-function" (ETAPA 13A, genera el
+// access_token de Belvo) -> Belvo Connect Widget -> callback de éxito (link, institution)
+// -> Edge Function "belvo-save-link" (ETAPA 13B) -> guarda la conexión en bank_accounts.
+// Ningún secreto de Belvo ni la service_role de Supabase pasan nunca por este archivo:
+// sb.functions.invoke() adjunta automáticamente el token de sesión del usuario.
+// Esta etapa NO importa cuentas ni movimientos todavía.
+async function connectBank(){
+ if(!sb||!currentUser){alert("La conexión bancaria en la nube es opcional y requiere una sesión de nube. Tu aplicación sigue funcionando en modo local.");return}
+ if(!navigator.onLine){alert("Necesitas conexión a internet para conectar tu banco.");return}
+ if(typeof belvoSDK==="undefined"){alert("No se pudo cargar el widget de Belvo. Intenta de nuevo en unos segundos.");return}
+ try{
+  const{data,error}=await sb.functions.invoke("dynamic-function",{method:"POST"});
+  if(error||!data||!data.access_token){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.");return}
+  belvoSDK.createWidget(data.access_token,{
+   callback:(link,institution)=>belvoConnectSuccess(link,institution),
+   onExit:()=>{},
+   onEvent:()=>{}
+  }).build()
+ }catch(err){alert("No se pudo iniciar la conexión con tu banco. Intenta de nuevo.")}
+}
+async function belvoConnectSuccess(link,institution){
+ try{
+  const{data,error}=await sb.functions.invoke("belvo-save-link",{method:"POST",body:{link_id:link,institution:institution||null}});
+  if(error||!data||!data.success){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.");return}
+  alert("¡Banco conectado correctamente!");
+  loadBankAccounts()
+ }catch(err){alert("Tu banco se conectó, pero no pudimos guardar la conexión. Intenta sincronizar de nuevo o contáctanos.")}
+}
 function updateOnlineStatus(){offlineBanner.style.display=navigator.onLine?"none":"block"}
 function manualSync(){
- if(!sb){alert("Configura SUPABASE_URL/SUPABASE_ANON_KEY para poder sincronizar.");return}
- if(!currentUser){alert("Inicia sesión para sincronizar con la nube.");return}
+ if(!sb||!currentUser){alert("Tus movimientos y presupuesto ya están guardados en este dispositivo. La sincronización en la nube es opcional.");return}
  if(!navigator.onLine){alert("No hay conexión a internet en este momento. Tus cambios están guardados en este dispositivo.");return}
  syncStatus.textContent="Sincronizando…";
  pullFromCloud()
@@ -1273,29 +1357,25 @@ function manualSync(){
 window.addEventListener("online",()=>{updateOnlineStatus();if(currentUser)pullFromCloud()});
 window.addEventListener("offline",updateOnlineStatus);
 try{
+ toggleAuthUI(true); // decide de inmediato según el nombre local, sin esperar a Supabase
  if(sb){
   sb.auth.onAuthStateChange((event,session)=>{
-   if(event==="PASSWORD_RECOVERY"){
-    // Enlace real de recuperación: se pide la nueva contraseña antes de mostrar el dashboard.
-    showAuthScreen("credentials");setAuthMode("recovery");
-    return;
-   }
+   // Supabase es opcional: ningún evento de Auth puede bloquear la entrada local.
    currentUser=session?session.user:null;
-   authBtn.textContent=currentUser?("Salir ("+currentUser.email+")"):"Iniciar sesión";
-   authBtn.onclick=currentUser?doSignOut:openAuth;
-   accountEmail.textContent=currentUser?currentUser.email:"No has iniciado sesión";
-   toggleAuthUI(!!currentUser);
+   authBtn.textContent="Cambiar nombre";
+   authBtn.onclick=changeLocalName;
+   accountEmail.textContent=currentUser?currentUser.email:"Sin cuenta de nube · modo local";
+   toggleAuthUI();
    if(currentUser)pullFromCloud();else syncStatus.textContent="";
-     });
+   if(currentView==="account")loadBankAccounts()
+  });
   sb.auth.getSession().then(({data:{session}})=>{
    currentUser=session?session.user:null;
-   if(currentUser){authBtn.textContent="Salir ("+currentUser.email+")";authBtn.onclick=doSignOut;accountEmail.textContent=currentUser.email;toggleAuthUI(true);pullFromCloud()}
-   else{toggleAuthUI(false)}
+   if(currentUser){authBtn.textContent="Cambiar nombre";authBtn.onclick=changeLocalName;accountEmail.textContent=currentUser.email;toggleAuthUI();pullFromCloud()}
+   else{authBtn.textContent="Cambiar nombre";authBtn.onclick=changeLocalName;accountEmail.textContent="Sin cuenta de nube · modo local";toggleAuthUI()}
   }).catch(()=>{toggleAuthUI(false)}) // ante un fallo de red puntual al pedir la sesión, igual se muestra la bienvenida
  }else{
-  // Sin Supabase configurado o sin poder inicializarlo (ver captura arriba): se conserva el
-  // comportamiento previo (mostrar la app igual; los mensajes de "falta configurar Supabase"
-  // ya los muestran doSignIn/doSignUp/doForgotPassword).
+  // Sin Supabase configurado, la aplicación funciona completamente en modo local.
   toggleAuthUI(true);
  }
  populateCats();render();
@@ -1410,6 +1490,7 @@ window.lumiCelebrate=msg=>lumi.controller.say('celebrating',msg||'¡Excelente! �
 window.lumiScold=msg=>lumi.controller.say('warning',msg||'Ey... revisemos el presupuesto. 👀');
 window.updateLumiFromData=()=>lumi.controller.onView(window.currentView||'home');
 
+const _origPaintOnShowView=window.showView;window.showView=function(v){_origPaintOnShowView(v);if(v==="account")paintAccountLocalName()};
 const oldShowView=window.showView;
 if(typeof oldShowView==='function')window.showView=function(v){oldShowView(v);window.dispatchEvent(new CustomEvent('lumi:view',{detail:v}));setTimeout(()=>lumi.controller.onView(v),180)};
 window.addEventListener('mcf:transaction-saved',e=>lumi.controller.onTransaction(e.detail?.type));
