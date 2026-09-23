@@ -1,0 +1,63 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Preparar archivos web
+        run: |
+          mkdir -p www/assets/lumi www/icons
+
+          cp index.html www/index.html
+          cp manifest.json www/manifest.json
+          cp service-worker.js www/service-worker.js
+
+          # Lumi.glb está en la raíz del repositorio
+          cp Lumi.glb www/assets/lumi/Lumi.glb
+
+          # Icono disponible en la raíz
+          cp icon-512.png www/icons/icon-512.png
+          cp icon-512.png www/icons/icon-192.png
+
+      - name: Crear proyecto Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+
+          npx cap init "Mi Control Financiero" "com.micontrolfinanciero.app" --web-dir www
+          npx cap add android
+          npx cap sync android
+
+      - name: Construir APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mi-Control-Financiero-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
