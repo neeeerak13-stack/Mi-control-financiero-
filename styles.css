@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Outfit:wght@400;500;600;700;800&display=swap");
 
 :root {
   --bg: #070908;
@@ -23,12 +23,6 @@
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@layer base {
-  button:not(:disabled),
-  [role="button"]:not(:disabled) {
-    cursor: pointer;
-  }
-}
 
 html {
   -webkit-font-smoothing: antialiased;

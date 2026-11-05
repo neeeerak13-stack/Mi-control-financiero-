@@ -1,0 +1,45 @@
+MI CONTROL FINANCIERO — ZIP LISTO PARA APK (diseño Nilo)
+
+Este zip YA tiene la estructura que GitHub Actions necesita.
+NO es el proyecto React completo: es la versión ESTÁTICA que se convierte en APK.
+
+ARCHIVOS IMPORTANTES
+- index.html          → pantalla de la app (diseño Nilo)
+- finance-engine.js   → lógica de finanzas
+- styles.css          → estilos nuevos
+- service-worker.js   → caché (versión mcf-nilo-v1, no la vieja)
+- manifest.json
+- icon-192.png / icon-512.png
+- .github/workflows/build-apk.yml  → el "workflow" que construye el APK
+- tests/              → pruebas mínimas antes de armar el APK
+
+CÓMO SUBIRLO (desde el teléfono o PC)
+
+1) En GitHub, abre tu repositorio.
+2) Ideal: borra TODO lo viejo de la rama principal (main o principal),
+   sobre todo:
+   - index.html viejo
+   - Lumi.glb
+   - Mi_Control_Financiero_V27...zip
+   - grok-workspace.zip
+   - archivos sueltos sin carpetas
+3) Descomprime ESTE zip en una carpeta vacía en tu teléfono/PC.
+4) Sube el CONTENIDO de la carpeta (no un zip adentro de otro zip).
+   Debes ver en la raíz del repo:
+   index.html, finance-engine.js, styles.css, manifest.json,
+   service-worker.js, icon-192.png, icon-512.png, carpeta .github, carpeta tests.
+5) Asegúrate de subir a la misma rama donde corre el workflow
+   (main y principal están configuradas).
+6) Ve a Actions → "Build Android APK".
+   - Si no arrancó solo, pulsa "Run workflow".
+7) Cuando termine en verde, abre el run → Artifacts →
+   descarga "Mi-Control-Financiero-APK-Nilo-..."
+8) En el celular: DESINSTALA la app vieja e instala el APK nuevo.
+
+SI SIGUE SALIENDO LA APP VIEJA
+- Estás instalando un APK viejo (mira la fecha del artifact).
+- O subiste a otra rama distinta de main/principal.
+- O no desinstalaste la app anterior.
+
+NOTA
+Este APK es de previsualización (debug), id com.micontrolfinanciero.preview.

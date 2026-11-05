@@ -1,0 +1,104 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, principal]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validar archivos de entrada
+        run: |
+          test -s index.html
+          test -s manifest.json
+          test -s service-worker.js
+          test -s styles.css
+          test -s finance-engine.js
+          test -s icon-192.png
+          test -s icon-512.png
+          grep -q 'finance-engine.js' index.html
+          grep -q 'styles.css' index.html
+          grep -q 'Nilo\|nilo' index.html
+          node --check finance-engine.js
+          node --check service-worker.js
+
+      - name: Ejecutar pruebas de integridad
+        run: |
+          python3 -m pip install --disable-pip-version-check pytest
+          python3 -m pytest -q tests
+
+      - name: Preparar archivos web
+        run: |
+          mkdir -p www/icons
+          cp index.html manifest.json service-worker.js styles.css finance-engine.js www/
+          cp icon-192.png icon-512.png www/
+          cp icon-192.png icon-512.png www/icons/
+          test -s www/index.html
+          test -s www/finance-engine.js
+          test -s www/styles.css
+
+      - name: Crear proyecto Capacitor
+        run: |
+          npm init -y
+          npm install --save-exact @capacitor/core@8.6.0 @capacitor/cli@8.6.0 @capacitor/android@8.6.0
+          cat > capacitor.config.json <<'CFG'
+          {
+            "appId": "com.micontrolfinanciero.preview",
+            "appName": "Mi Control Financiero",
+            "webDir": "www"
+          }
+          CFG
+          npx cap add android
+          npx cap sync android
+
+      - name: Construir APK de depuración
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Verificar APK y generar checksum
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          sha256sum "$APK" > android/app/build/outputs/apk/debug/SHA256SUMS.txt
+          ls -lh "$APK"
+
+      - name: Guardar APK y checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mi-Control-Financiero-APK-Nilo-${{ github.run_number }}
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
