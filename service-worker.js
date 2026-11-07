@@ -1,54 +1,46 @@
-const CACHE = "mcf-nilo-v1";
-const SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./styles.css",
-  "./finance-engine.js",
-  "./icon-192.png",
-  "./icon-512.png"
-];
+const CACHE_NAME = "mcf-shell-v1";
+const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./assets/icon.svg", "./assets/icon-192.png", "./assets/icon-512.png"];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      await cache.addAll(SHELL);
-      await self.skipWaiting();
-    })()
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
 });
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    (async () => {
-      const names = await caches.keys();
-      await Promise.all(
-        names
-          .filter((name) => name.startsWith("mcf-") && name !== CACHE)
-          .map((name) => caches.delete(name))
-      );
-      await self.clients.claim();
-    })()
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
   );
 });
+
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  const url = new URL(event.request.url);
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy));
+        return response;
+      }).catch(async () => (await caches.match("./index.html")) || (await caches.match("./")))
+    );
+    return;
+  }
+
   event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const fresh = await fetch(event.request);
-        if (fresh.ok) await cache.put(event.request, fresh.clone());
-        return fresh;
-      } catch (error) {
-        const cached = await cache.match(event.request);
-        if (cached) return cached;
-        if (event.request.mode === "navigate") {
-          return (await cache.match("./index.html")) || Response.error();
-        }
-        return Response.error();
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      if (response && response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
       }
-    })()
+      return response;
+    }))
   );
 });

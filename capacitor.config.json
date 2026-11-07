@@ -1,0 +1,9 @@
+{
+  "appId": "com.micontrolfinanciero.app",
+  "appName": "Mi Control Financiero",
+  "webDir": "www",
+  "backgroundColor": "#070908",
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,1 @@
+La interfaz original se tomó de `mi-control-financiero.zip`. No se editaron reglas CSS, estructura de pantallas, textos visibles, SVGs del HTML ni iconos existentes. Los únicos cambios en `www/index.html` son metadatos PWA en el head y el registro condicional de service worker al final del body.
