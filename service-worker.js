@@ -1,4 +1,4 @@
-const CACHE_NAME = "mcf-shell-v1";
+const CACHE_NAME = "mcf-shell-v2";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./assets/icon.svg", "./assets/icon-192.png", "./assets/icon-512.png"];
 
 self.addEventListener("install", (event) => {

@@ -1,31 +1,21 @@
-# Estado de integraciones — Mi Control Financiero
+# Integraciones y almacenamiento
 
-## Lo que se encontró en el ZIP entregado
+## Estado comprobado en los archivos entregados
 
-`www/index.html` es una app local autónoma. Su script `funcionamiento` implementa perfiles, movimientos, presupuestos, análisis, deudas, metas, gastos recurrentes, Nilo y exportación/importación. No incluye:
+La aplicación funciona como aplicación local. El código del ZIP y la nueva interfaz no contienen una implementación verificable de:
+- Sincronización con una nube o base de datos remota.
+- Autenticación de usuarios.
+- Conexión bancaria mediante Belvo.
+- Cliente Supabase, llamadas de sincronización remota o funciones backend incluidas en el paquete.
 
-- `@supabase/supabase-js` ni configuración Supabase.
-- Pantalla o flujo de autenticación de Supabase.
-- Llamadas `fetch` ni funciones de sincronización remota.
-- Flujo de enlace bancario Belvo.
-- Permisos o consentimiento para conectar cuentas bancarias.
+No se añadió ninguna integración externa ni se simularon conexiones bancarias. Las cuentas Efectivo, Nequi y Nu son bolsillos locales de registro, no conexiones con esos proveedores.
 
-La persistencia actual se realiza con `localStorage`.
+## Almacenamiento
 
-## Contexto previo del backend
+Los perfiles y movimientos se guardan en `localStorage`. El service worker almacena archivos de la aplicación para abrir la interfaz offline, pero no sincroniza ni respalda los datos financieros.
 
-En el trabajo anterior se había configurado un proyecto Supabase en la organización de la usuaria. El estado leído durante esta sesión era `INACTIVE`; se solicitó su restauración y el último estado devuelto fue `COMING_UP` (arrancando).
+La exportación JSON permite trasladar datos entre instalaciones manualmente. El archivo es legible y no tiene cifrado.
 
-El contexto anterior registra funciones Edge `dynamic-function`, `belvo-save-link` y `belvo-import-transactions`, además de tablas `bank_accounts` y `transactions`, y protecciones para campos administrados por Belvo. Esos componentes deben revisarse contra el proyecto ya restaurado antes de volver a usarlos. El flujo Belvo end-to-end no estaba confirmado en la última revisión histórica.
+## Si en el futuro se autoriza sincronización
 
-## Seguridad y decisiones pendientes
-
-- No incluir claves `service_role` ni secretos de Belvo en `www/index.html`.
-- El frontend solo debe usar una clave publicable de Supabase.
-- Para sincronización entre dispositivos se necesita una identidad de usuario estable y políticas RLS por propietario.
-- Para enlazar bancos se necesita una acción explícita de consentimiento en la interfaz. No se añadió porque se pidió conservar la interfaz sin cambios.
-- No se debe declarar una cuenta bancaria conectada hasta confirmar el intercambio con Belvo en Sandbox y la importación idempotente de movimientos.
-
-## Resultado de esta entrega
-
-La app local y la estructura Android/PWA quedan preparadas. La integración cloud/bancaria queda identificada como pendiente de revalidación, no simulada.
+Se requerirá diseñar y auditar una arquitectura backend, autenticación, autorización por propietario, reglas de acceso a filas, cifrado en tránsito, gestión de secretos y estrategia de conflictos/sincronización. Ninguna de esas capacidades debe declararse disponible hasta implementarse y probarse.

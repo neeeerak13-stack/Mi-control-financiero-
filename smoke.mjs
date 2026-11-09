@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import crypto from "node:crypto";
 
 const html = fs.readFileSync(new URL("../www/index.html", import.meta.url), "utf8");
 const scriptMatch = html.match(/<script id="funcionamiento">([\s\S]*?)<\/script>/i);
@@ -32,6 +33,20 @@ assert.match(html, /<title>Mi Control Financiero<\/title>/);
 assert.match(html, /id="coachOrb"/);
 assert.match(html, /Nilo/);
 assert.match(html, /rel="manifest"/);
+assert.match(html, /serviceWorker\.register/);
+assert.match(script, /function isValidISODate/);
+assert.match(script, /function makeId/);
+assert.match(script, /validTransactionTypes/);
+const css = html.match(/<style>([\s\S]*?)<\/style>/i)?.[1];
+assert.ok(css, "No se encontró el CSS oficial");
+assert.equal(
+  crypto.createHash("sha256").update(css).digest("hex"),
+  "fcbe2f81f83fe4688037cbde8c2d503781c0715eefb89b5b3406f653f86d6035",
+  "El CSS de la interfaz oficial fue modificado"
+);
+for (const page of ["home", "analysis", "budget", "movements", "account"]) {
+  assert.match(html, new RegExp('data-page="' + page + '"'), "Falta la pestaña " + page);
+}
 assert.doesNotMatch(html, /Aurora/i, "El nombre de otra app se filtró al proyecto.");
 
 // Run pure financial calculations from the same source, stopping before DOM startup.

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#070908" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -325,97 +326,307 @@ button:disabled {
 }
 
 
+
+
+
 .nilo-body {
   position: relative;
   display: block;
   width: 1em;
   height: 1em;
-  color: var(--nilo, #5b9cf5);
 }
 
-.nilo-svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+.nilo-aura {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 18%;
+  bottom: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(150, 110, 255, 0.55), rgba(80, 40, 180, 0.15) 55%, transparent 72%);
+  filter: blur(0.06em);
+  pointer-events: none;
+}
+
+.nilo-cloud {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 8%;
+  bottom: 4%;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255,255,255,0.55), transparent 28%),
+    linear-gradient(165deg, #d2c4ff 0%, #8a6bff 30%, #5a38d6 68%, #321c86 100%);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20160%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M46%20118c-22%200-38-16-38-36%200-16%2011-30%2026-34-1-20%2016-36%2038-36%2014%200%2026%207%2033%2018%206-16%2024-26%2043-22%2016%203%2028%2016%2031%2032%2016%202%2028%2016%2028%2033%200%2020-16%2036-36%2036H46z%22/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20160%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M46%20118c-22%200-38-16-38-36%200-16%2011-30%2026-34-1-20%2016-36%2038-36%2014%200%2026%207%2033%2018%206-16%2024-26%2043-22%2016%203%2028%2016%2031%2032%2016%202%2028%2016%2028%2033%200%2020-16%2036-36%2036H46z%22/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0.06em 0.08em rgba(90, 50, 200, 0.45));
+}
+
+.nilo-lobe,
+.nilo-base {
+  display: none;
+
+  position: absolute;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), transparent 36%),
+    radial-gradient(circle at 70% 75%, rgba(255, 120, 190, 0.28), transparent 42%),
+    linear-gradient(165deg, #b7a4ff 0%, #7a5cff 28%, #5b3ad8 62%, #3a228f 100%);
+  box-shadow:
+    inset 0 0.03em 0.06em rgba(255, 255, 255, 0.45),
+    inset 0 -0.05em 0.1em rgba(30, 10, 80, 0.35);
+}
+
+.nilo-lobe {
+  border-radius: 50%;
+  z-index: 1;
+}
+.nilo-lobe.a { left: 2%; top: 22%; width: 46%; height: 46%; }
+.nilo-lobe.b { left: 27%; top: 4%; width: 48%; height: 50%; }
+.nilo-lobe.c { right: 2%; top: 24%; width: 42%; height: 44%; }
+
+.nilo-base {
+  left: 6%;
+  right: 6%;
+  top: 40%;
+  bottom: 6%;
+  border-radius: 40% 40% 46% 46%;
+  z-index: 1;
+}
+
+.nilo-wash {
+  position: absolute;
+  z-index: 2;
+  left: 30%;
+  right: 28%;
+  top: 42%;
+  bottom: 26%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 40%, rgba(255, 230, 160, 0.85), transparent 36%),
+    radial-gradient(circle at 68% 58%, rgba(120, 230, 255, 0.75), transparent 42%),
+    radial-gradient(circle at 45% 70%, rgba(255, 130, 200, 0.55), transparent 48%);
+  filter: blur(0.03em);
+  opacity: 0.95;
+  pointer-events: none;
+  animation: niloWash 5.5s ease-in-out infinite;
+}
+
+.nilo-face {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 56%;
+  width: 52%;
+  height: 38%;
+  transform: translate(-50%, -50%);
+  animation: niloLook 6.8s ease-in-out infinite;
 }
 
 .nilo-eye {
-  fill: #141414;
+  position: absolute;
+  top: 18%;
+  width: 0.09em;
+  height: 0.24em;
+  border-radius: 1em;
+  background: #fff;
+  box-shadow:
+    0 0 0.04em rgba(255, 255, 255, 0.95),
+    0 0 0.1em rgba(190, 230, 255, 0.85);
+  animation: niloBlink 5.4s ease-in-out infinite;
+}
+.nilo-eye.left { left: 18%; }
+.nilo-eye.right { right: 18%; animation-delay: 0.12s; }
+
+.nilo-mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: 0.16em;
+  height: 0.07em;
+  margin-left: -0.08em;
+  border: 0.028em solid rgba(255, 255, 255, 0.92);
+  border-top: 0;
+  border-radius: 0 0 0.2em 0.2em;
+  background: transparent;
+  box-shadow: 0 0.02em 0.05em rgba(255, 255, 255, 0.35);
+  opacity: 0.9;
+}
+
+.nilo.mood-happy .nilo-eye {
+  height: 0.09em;
+  top: 32%;
+  width: 0.12em;
+  border-radius: 0.12em 0.12em 0.02em 0.02em;
+  background: transparent;
+  border-bottom: 0.035em solid #fff;
+  box-shadow: none;
+  animation: none;
+}
+.nilo.mood-happy .nilo-mouth {
+  width: 0.2em;
+  height: 0.09em;
+  margin-left: -0.1em;
+}
+.nilo.mood-happy .nilo-wash {
+  background:
+    radial-gradient(circle at 40% 40%, rgba(255, 220, 120, 0.95), transparent 40%),
+    radial-gradient(circle at 65% 60%, rgba(255, 140, 190, 0.8), transparent 48%);
+}
+
+.nilo.mood-alert .nilo-eye {
+  height: 0.26em;
+  width: 0.09em;
+  top: 8%;
+  animation: none;
+  background: #ffe8c8;
+  box-shadow: 0 0 0.08em rgba(255, 160, 80, 0.9);
+}
+.nilo.mood-alert .nilo-mouth {
+  width: 0.1em;
+  height: 0.1em;
+  margin-left: -0.05em;
+  border-radius: 50%;
+  border: 0.028em solid #fff;
+}
+.nilo.mood-alert .nilo-wash {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 120, 70, 0.85), rgba(255, 60, 120, 0.35) 55%, transparent 72%);
+}
+
+.nilo.mood-thinking .nilo-face { animation: niloThink 2.6s ease-in-out infinite; }
+.nilo.mood-thinking .nilo-eye.left { transform: translateY(-0.02em) rotate(-8deg); }
+.nilo.mood-thinking .nilo-eye.right { transform: translateY(-0.05em) rotate(10deg); }
+.nilo.mood-thinking .nilo-mouth {
+  width: 0.08em;
+  height: 0.08em;
+  margin-left: -0.04em;
+  border-radius: 50%;
+  border: 0.028em solid #fff;
+}
+.nilo.mood-thinking .nilo-wash {
+  background:
+    radial-gradient(circle at 35% 40%, rgba(120, 230, 255, 0.9), transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(170, 140, 255, 0.7), transparent 48%);
+}
+
+.nilo.mood-focus .nilo-eye {
+  height: 0.045em;
+  width: 0.11em;
+  top: 36%;
+  border-radius: 0.04em;
+  animation: none;
+}
+.nilo.mood-focus .nilo-mouth { opacity: 0.35; width: 0.1em; height: 0.03em; margin-left: -0.05em; border-radius: 0.04em; border: 0; background: #fff; }
+.nilo.mood-focus .nilo-wash {
+  background: radial-gradient(circle at 50% 45%, rgba(180, 210, 255, 0.7), rgba(90, 70, 200, 0.2) 60%, transparent 75%);
+}
+
+.nilo.mood-love .nilo-eye {
+  width: 0.11em;
+  height: 0.1em;
+  top: 22%;
+  border-radius: 0.1em 0.1em 0.02em 0.02em;
+  background: #ffd0dc;
+  box-shadow: 0 0 0.08em rgba(255, 120, 160, 0.95);
+  animation: niloHeart 1.6s ease-in-out infinite;
+}
+.nilo.mood-love .nilo-mouth {
+  width: 0.18em;
+  height: 0.08em;
+  margin-left: -0.09em;
+}
+.nilo.mood-love .nilo-wash {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 140, 180, 0.95), transparent 42%),
+    radial-gradient(circle at 30% 60%, rgba(255, 200, 120, 0.6), transparent 50%);
+}
+
+.nilo.mood-soft .nilo-eye {
+  height: 0.04em;
+  width: 0.1em;
+  top: 38%;
+  border-radius: 0.08em;
+  animation: none;
+}
+.nilo.mood-soft .nilo-mouth { opacity: 0.45; width: 0.1em; height: 0.04em; margin-left: -0.05em; }
+.nilo.mood-soft .nilo-wash {
+  background: radial-gradient(circle at 50% 50%, rgba(140, 200, 255, 0.75), rgba(90, 80, 200, 0.25) 55%, transparent 75%);
 }
 
 .app[data-tab="home"] .nilo-live .nilo-body,
-.entry .nilo-hero .nilo-body {
-  animation: niloFloat 3.6s ease-in-out infinite;
-}
+.entry .nilo-hero .nilo-body { animation: niloFloat 3.8s ease-in-out infinite; }
+.app[data-tab="analysis"] .nilo-live .nilo-body { animation: niloPeer 3s ease-in-out infinite; }
+.app[data-tab="budget"] .nilo-live .nilo-body { animation: niloNod 2s ease-in-out infinite; }
+.app[data-tab="movements"] .nilo-live .nilo-body { animation: niloScan 2.6s ease-in-out infinite; }
+.app[data-tab="account"] .nilo-live .nilo-body { animation: niloRest 4.4s ease-in-out infinite; }
+.nilo.nilo-pop .nilo-body { animation: niloPop 0.48s var(--ease); }
 
-.app[data-tab="analysis"] .nilo-live .nilo-body {
-  animation: niloPeer 2.8s ease-in-out infinite;
+@keyframes niloBlink {
+  0%, 46%, 52%, 100% { transform: scaleY(1); }
+  49% { transform: scaleY(0.15); }
 }
-
-.app[data-tab="budget"] .nilo-live .nilo-body {
-  animation: niloNod 1.8s ease-in-out infinite;
+@keyframes niloLook {
+  0%, 42%, 100% { transform: translate(-50%, -50%); }
+  52% { transform: translate(-42%, -50%); }
+  68% { transform: translate(-58%, -52%); }
+  82% { transform: translate(-50%, -50%); }
 }
-
-.app[data-tab="movements"] .nilo-live .nilo-body {
-  animation: niloScan 2.4s ease-in-out infinite;
+@keyframes niloThink {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+  50% { transform: translate(-46%, -54%) rotate(5deg); }
 }
-
-.app[data-tab="account"] .nilo-live .nilo-body {
-  animation: niloRest 4.2s ease-in-out infinite;
+@keyframes niloHeart {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
 }
-
-.nilo.nilo-pop .nilo-body {
-  animation: niloPop 0.45s var(--ease);
+@keyframes niloWash {
+  0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.9; }
+  50% { transform: scale(1.08) translate(0.02em, -0.02em); opacity: 1; }
 }
-
 @keyframes niloFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(2deg); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
 }
-
 @keyframes niloPeer {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(7deg); }
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(6deg); }
 }
-
 @keyframes niloNod {
   0%, 100% { transform: translateY(0); }
-  45% { transform: translateY(3px); }
-  70% { transform: translateY(-4px); }
+  40% { transform: translateY(4px); }
+  70% { transform: translateY(-5px); }
 }
-
 @keyframes niloScan {
   0%, 100% { transform: translateX(0); }
-  40% { transform: translateX(5px); }
-  70% { transform: translateX(-5px); }
+  35% { transform: translateX(6px); }
+  70% { transform: translateX(-6px); }
 }
-
 @keyframes niloRest {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
-
 @keyframes niloPop {
   0% { transform: scale(1); }
-  40% { transform: scale(1.07, 0.94); }
+  35% { transform: scale(1.08, 0.92); }
+  70% { transform: scale(0.97, 1.03); }
   100% { transform: scale(1); }
 }
 
-40% {
-    transform: scale(1.07, 0.94);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
+
+
 
 .entry {
   display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   min-height: 100vh;
+  min-height: 100dvh;
   align-items: center;
   justify-content: center;
-  padding: 28px 22px 48px;
+  padding: 28px 22px calc(28px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .entry.show {
@@ -1038,30 +1249,44 @@ button:disabled {
 }
 
 .budget-total {
-  background: var(--paper);
-  color: var(--ink);
-  border: 0;
-  box-shadow: var(--shadow);
+  margin-top: 8px;
+  padding: 18px 18px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(243, 241, 234, 0.12);
+  background: linear-gradient(160deg, rgba(244, 241, 232, 0.07), rgba(244, 241, 232, 0.02));
+  color: var(--text);
+  box-shadow: none;
 }
 
 .budget-total small,
 .budget-total .line {
-  color: rgba(22, 20, 15, 0.62);
+  color: var(--muted);
+}
+
+.budget-total .line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(243, 241, 234, 0.1);
+  font-size: 13px;
 }
 
 .budget-total .line b,
 .budget-total strong {
-  color: var(--ink);
+  color: var(--paper);
 }
 
 .budget-total strong {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: var(--display);
   font-weight: 500;
   font-size: 36px;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  color: var(--paper);
 }
 
 .budget-tools,
@@ -1661,25 +1886,26 @@ button:disabled {
 }
 
   </style>
-
-  <!-- PWA / instalación: no modifica estilos ni estructura visual -->
-  <meta name="application-name" content="Mi Control Financiero" />
-  <meta name="apple-mobile-web-app-title" content="Mi Control Financiero" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
-
 </head>
 <body>
 <!-- ==================== INTERFAZ FIJA (no modificar) ==================== -->
 
-<div id="entry" class="entry show">
+<div id="entry" class="entry">
   <div class="entry-card">
     <div class="nilo nilo-hero" aria-hidden="true"><span class="nilo-body" aria-hidden="true">
-  <svg class="nilo-svg" viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
-    <path class="nilo-ring" fill="currentColor" fill-rule="evenodd" d="M 155 18 C 235 18 290 70 290 150 C 290 230 235 282 155 282 C 75 282 20 230 20 150 C 20 95 50 50 95 32 L 55 6 C 85 0 120 8 145 26 C 148 22 151 18 155 18 Z M 155 78 C 200 78 230 108 230 150 C 230 192 200 222 155 222 C 110 222 80 192 80 150 C 80 108 110 78 155 78 Z"/>
-    <ellipse class="nilo-eye nilo-eye-l" cx="136" cy="152" rx="17" ry="27" fill="#141414"/>
-    <ellipse class="nilo-eye nilo-eye-r" cx="186" cy="152" rx="13" ry="23" fill="#141414"/>
-  </svg>
+  <span class="nilo-aura"></span>
+  <span class="nilo-cloud">
+    <span class="nilo-lobe a"></span>
+    <span class="nilo-lobe b"></span>
+    <span class="nilo-lobe c"></span>
+    <span class="nilo-base"></span>
+    <span class="nilo-wash"></span>
+    <span class="nilo-face">
+      <span class="nilo-eye left"></span>
+      <span class="nilo-eye right"></span>
+      <span class="nilo-mouth"></span>
+    </span>
+  </span>
 </span></div>
     <p class="entry-kicker">Tu cuaderno</p>
     <h1>Hola.</h1>
@@ -1699,11 +1925,19 @@ button:disabled {
   </header>
   <div class="nilo-dock">
     <button id="coachOrb" class="nilo nilo-live" type="button" onclick="openCoach()" aria-label="Hablar con Nilo"><span class="nilo-body" aria-hidden="true">
-  <svg class="nilo-svg" viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
-    <path class="nilo-ring" fill="currentColor" fill-rule="evenodd" d="M 155 18 C 235 18 290 70 290 150 C 290 230 235 282 155 282 C 75 282 20 230 20 150 C 20 95 50 50 95 32 L 55 6 C 85 0 120 8 145 26 C 148 22 151 18 155 18 Z M 155 78 C 200 78 230 108 230 150 C 230 192 200 222 155 222 C 110 222 80 192 80 150 C 80 108 110 78 155 78 Z"/>
-    <ellipse class="nilo-eye nilo-eye-l" cx="136" cy="152" rx="17" ry="27" fill="#141414"/>
-    <ellipse class="nilo-eye nilo-eye-r" cx="186" cy="152" rx="13" ry="23" fill="#141414"/>
-  </svg>
+  <span class="nilo-aura"></span>
+  <span class="nilo-cloud">
+    <span class="nilo-lobe a"></span>
+    <span class="nilo-lobe b"></span>
+    <span class="nilo-lobe c"></span>
+    <span class="nilo-base"></span>
+    <span class="nilo-wash"></span>
+    <span class="nilo-face">
+      <span class="nilo-eye left"></span>
+      <span class="nilo-eye right"></span>
+      <span class="nilo-mouth"></span>
+    </span>
+  </span>
 </span></button>
     <div class="nilo-speech">
       <p class="nilo-name">Nilo</p>
@@ -1926,11 +2160,19 @@ button:disabled {
 <div class="modal" id="coachModal"><div class="sheet coach-sheet">
   <div class="sheet-head">
     <div class="coach-title"><div class="coach-mini nilo nilo-mini nilo-live"><span class="nilo-body" aria-hidden="true">
-  <svg class="nilo-svg" viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
-    <path class="nilo-ring" fill="currentColor" fill-rule="evenodd" d="M 155 18 C 235 18 290 70 290 150 C 290 230 235 282 155 282 C 75 282 20 230 20 150 C 20 95 50 50 95 32 L 55 6 C 85 0 120 8 145 26 C 148 22 151 18 155 18 Z M 155 78 C 200 78 230 108 230 150 C 230 192 200 222 155 222 C 110 222 80 192 80 150 C 80 108 110 78 155 78 Z"/>
-    <ellipse class="nilo-eye nilo-eye-l" cx="136" cy="152" rx="17" ry="27" fill="#141414"/>
-    <ellipse class="nilo-eye nilo-eye-r" cx="186" cy="152" rx="13" ry="23" fill="#141414"/>
-  </svg>
+  <span class="nilo-aura"></span>
+  <span class="nilo-cloud">
+    <span class="nilo-lobe a"></span>
+    <span class="nilo-lobe b"></span>
+    <span class="nilo-lobe c"></span>
+    <span class="nilo-base"></span>
+    <span class="nilo-wash"></span>
+    <span class="nilo-face">
+      <span class="nilo-eye left"></span>
+      <span class="nilo-eye right"></span>
+      <span class="nilo-mouth"></span>
+    </span>
+  </span>
 </span></div><div><strong>Nilo</strong><small>Habla con lo que ya anotaste</small></div></div>
     <button class="close" type="button" onclick="closeModal('coachModal')" aria-label="Cerrar">×</button>
   </div>
@@ -1997,6 +2239,20 @@ const money = (n) =>
     .format(Number(n) || 0)
     .replace("COP", "")
     .trim();
+const validAccounts = new Set(["cash", "nequi", "nu"]);
+const validTransactionTypes = new Set(["income", "expense", "saving"]);
+function isValidISODate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}
+function makeId(prefix = "m") {
+  const random = globalThis.crypto && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
+  return prefix + "_" + random;
+}
 const esc = (s) =>
   String(s ?? "").replace(
     /[&<>'"]/g,
@@ -2279,17 +2535,41 @@ function enterApp() {
   showApp();
 }
 function showApp() {
-  const n = localStorage.getItem(NAME_KEY) || "";
+  const n = (localStorage.getItem(NAME_KEY) || "").trim();
+  const entry = $("entry");
+  const app = $("app");
+  const nav = $("bottomNav");
   if (!n) {
-    $("entry").classList.add("show");
-    $("app").hidden = true;
-    $("bottomNav").hidden = true;
-    setTimeout(() => $("nameInput").focus(), 50);
+    if (entry) {
+      entry.classList.add("show");
+      entry.setAttribute("aria-hidden", "false");
+    }
+    if (app) {
+      app.hidden = true;
+      app.style.display = "none";
+    }
+    if (nav) {
+      nav.hidden = true;
+      nav.style.display = "none";
+    }
+    setTimeout(() => {
+      const input = $("nameInput");
+      if (input) input.focus();
+    }, 50);
     return;
   }
-  $("entry").classList.remove("show");
-  $("app").hidden = false;
-  $("bottomNav").hidden = false;
+  if (entry) {
+    entry.classList.remove("show");
+    entry.setAttribute("aria-hidden", "true");
+  }
+  if (app) {
+    app.hidden = false;
+    app.style.display = "";
+  }
+  if (nav) {
+    nav.hidden = false;
+    nav.style.display = "";
+  }
   paint();
 }
 function go(page) {
@@ -2378,7 +2658,7 @@ function movementHTML(t) {
   const c = categoryObj(t.category),
     sign = t.type === "income" ? "+" : "−";
   const account = { cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[t.account || "cash"] || "Efectivo";
-  return `<div class="movement-card"><div class="movement-icon">${c.emoji}</div><div class="movement-main"><div class="movement-name">${esc(t.description || t.category)}</div><div class="movement-meta">${esc(t.type === "saving" ? "Ahorro" : t.category)} · ${esc(account)} · ${esc(t.date)}</div><div class="movement-actions"><button class="movement-action" onclick="editTx(${Number(t.id)})">Editar</button><button class="movement-action delete" onclick="deleteTx(${Number(t.id)})">Eliminar</button></div></div><div class="movement-amount ${t.type === "saving" ? "saving" : t.type}">${sign} ${money(t.amount)}</div></div>`;
+  return `<div class="movement-card"><div class="movement-icon">${esc(c.emoji)}</div><div class="movement-main"><div class="movement-name">${esc(t.description || t.category)}</div><div class="movement-meta">${esc(t.type === "saving" ? "Ahorro" : t.category)} · ${esc(account)} · ${esc(t.date)}</div><div class="movement-actions"><button class="movement-action" onclick="editTx(decodeURIComponent('${jsArg(t.id)}'))">Editar</button><button class="movement-action delete" onclick="deleteTx(decodeURIComponent('${jsArg(t.id)}'))">Eliminar</button></div></div><div class="movement-amount ${t.type === "saving" ? "saving" : t.type}">${sign} ${money(t.amount)}</div></div>`;
 }
 function paint() {
   const n = localStorage.getItem(NAME_KEY) || "";
@@ -2446,7 +2726,7 @@ function refreshTxCategories() {
   const type = $("txType").value;
   const cats = state.categories.filter((c) => c.type === type);
   $("txCategory").innerHTML =
-    cats.map((c) => `<option value="${esc(c.name)}">${c.emoji} ${esc(c.name)}</option>`).join("") ||
+    cats.map((c) => `<option value="${esc(c.name)}">${esc(c.emoji)} ${esc(c.name)}</option>`).join("") ||
     (type === "saving"
       ? '<option value="Ahorro">🎯 Ahorro</option>'
       : '<option value="Otros gastos">📌 Otros gastos</option>');
@@ -2469,39 +2749,60 @@ function openTx(type = "expense") {
   setTimeout(() => $("txAmount").focus(), 50);
 }
 function saveTx() {
-  const amount = Number($("txAmount").value),
-    type = $("txType").value;
-  if (!(amount > 0)) {
-    toast("Escribe un monto válido");
+  const rawAmount = $("txAmount").value.trim();
+  const amount = Number(rawAmount);
+  const type = $("txType").value;
+  const cat = $("txCategory").value;
+  const account = $("txAccount").value;
+  const date = $("txDate").value;
+  const editId = $("txModal").dataset.editId;
+  if (!rawAmount || !Number.isFinite(amount) || amount <= 0 || amount > Number.MAX_SAFE_INTEGER) {
+    toast("Escribe un monto válido mayor que cero");
     return;
   }
-  const cat = $("txCategory").value;
-  const editId = $("txModal").dataset.editId;
+  if (!validTransactionTypes.has(type)) {
+    toast("Selecciona un tipo de movimiento válido");
+    return;
+  }
+  const category = state.categories.find((c) => c.name === cat && c.type === type);
+  if (!category) {
+    toast("Selecciona una categoría válida para este movimiento");
+    return;
+  }
+  if (!validAccounts.has(account)) {
+    toast("Selecciona un bolsillo válido");
+    return;
+  }
+  if (!isValidISODate(date)) {
+    toast("Selecciona una fecha válida");
+    return;
+  }
   if (editId) {
     const t = state.transactions.find((x) => String(x.id) === String(editId));
-    if (t) {
-      const previousType = t.type;
-      t.type = type;
-      t.amount = amount;
-      t.category = cat;
-      t.description = $("txDescription").value.trim() || cat;
-      t.date = $("txDate").value || today();
-      t.account = $("txAccount").value;
-      if (type !== "expense") {
-        delete t.debtId;
-        delete t.recurringId;
-      }
-      if (type !== "saving") delete t.goalId;
+    if (!t) {
+      toast("No encontramos el movimiento que intentas editar");
+      return;
     }
+    t.type = type;
+    t.amount = amount;
+    t.category = cat;
+    t.description = $("txDescription").value.trim().slice(0, 120) || cat;
+    t.date = date;
+    t.account = account;
+    if (type !== "expense") {
+      delete t.debtId;
+      delete t.recurringId;
+    }
+    if (type !== "saving") delete t.goalId;
   } else {
     state.transactions.push({
-      id: Date.now(),
+      id: makeId("tx"),
       type,
       amount,
       category: cat,
-      description: $("txDescription").value.trim() || cat,
-      date: $("txDate").value || today(),
-      account: $("txAccount").value,
+      description: $("txDescription").value.trim().slice(0, 120) || cat,
+      date,
+      account,
     });
   }
   delete $("txModal").dataset.editId;
@@ -2525,9 +2826,10 @@ function openMonthlyBudget() {
   setTimeout(() => $("monthlyAmount").focus(), 50);
 }
 function saveMonthlyBudget() {
-  const a = Number($("monthlyAmount").value);
-  if (a < 0 || Number.isNaN(a)) {
-    toast("Escribe un presupuesto válido");
+  const raw = $("monthlyAmount").value.trim();
+  const a = Number(raw);
+  if (!raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
+    toast("Escribe un presupuesto válido; usa 0 para quitarlo");
     return;
   }
   state.monthlyBudget = a;
@@ -2570,7 +2872,7 @@ function openEditCategory(name) {
 function openLimit(categoryName = "") {
   const cats = state.categories.filter((c) => c.type === "expense");
   $("limitCategory").innerHTML = cats
-    .map((c) => `<option value="${esc(c.name)}">${c.emoji} ${esc(c.name)}</option>`)
+    .map((c) => `<option value="${esc(c.name)}">${esc(c.emoji)} ${esc(c.name)}</option>`)
     .join("");
   if (categoryName && cats.some((c) => c.name === categoryName))
     $("limitCategory").value = categoryName;
@@ -2580,10 +2882,12 @@ function openLimit(categoryName = "") {
   setTimeout(() => $("limitAmount").focus(), 50);
 }
 function saveLimit() {
-  const c = $("limitCategory").value,
-    a = Number($("limitAmount").value);
-  if (!c || a < 0 || Number.isNaN(a)) {
-    toast("Escribe un límite válido");
+  const c = $("limitCategory").value;
+  const raw = $("limitAmount").value.trim();
+  const a = Number(raw);
+  if (!state.categories.some((x) => x.name === c && x.type === "expense") ||
+      !raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
+    toast("Escribe un límite válido; usa 0 para quitarlo");
     return;
   }
   if (a === 0) delete state.budgets[c];
@@ -2604,6 +2908,10 @@ function saveCategory() {
   const type = $("categoryType").value;
   if (!name) {
     toast("Ponle un nombre a la categoría");
+    return;
+  }
+  if (!["income", "expense", "saving"].includes(type)) {
+    toast("Selecciona un tipo de categoría válido");
     return;
   }
   if (categoryMode === "create") {
@@ -2686,7 +2994,7 @@ function deleteCategory(name) {
     return;
   }
   const hasTx = state.transactions.filter((t) => t.category === name);
-  let msg = `¿Eliminar ${c.emoji} ${name}?`;
+  let msg = `¿Eliminar ${esc(c.emoji)} ${name}?`;
   if (hasTx.length)
     msg += `\n\nTiene ${hasTx.length} movimiento${hasTx.length === 1 ? "" : "s"}. No se borrarán: se moverán a ${fallback} para conservar todos tus datos.`;
   if (!confirm(msg)) return;
@@ -2703,7 +3011,7 @@ function deleteCategory(name) {
   toast(`${name} eliminada sin borrar movimientos`);
 }
 function jsArg(v) {
-  return encodeURIComponent(String(v));
+  return encodeURIComponent(String(v)).replace(/'/g, "%27");
 }
 function renderCategoryManager() {
   const groups = [
@@ -2714,7 +3022,7 @@ function renderCategoryManager() {
   $("categoryManagerList").innerHTML = groups
     .map(
       ([title, cats]) =>
-        `<div class="group-label">${title}</div>${cats.map((c) => `<div class="manage-cat"><div class="manage-cat-main"><div class="manage-cat-name">${c.emoji} ${esc(c.name)}</div><div class="manage-cat-meta">${c.type === "expense" ? (state.budgets[c.name] != null ? `Límite: ${money(state.budgets[c.name])}` : "Sin límite") : "Categoría de ingreso"}</div></div><div class="manage-cat-actions"><button class="mini-btn" onclick="openEditCategory(decodeURIComponent('${jsArg(c.name)}'))">Editar</button>${c.type === "expense" ? `<button class="mini-btn limit" onclick="openLimit(decodeURIComponent('${jsArg(c.name)}'))">Límite</button>` : ""}<button class="mini-btn delete" onclick="deleteCategory(decodeURIComponent('${jsArg(c.name)}'))">Eliminar</button></div></div>`).join("")}`,
+        `<div class="group-label">${title}</div>${cats.map((c) => `<div class="manage-cat"><div class="manage-cat-main"><div class="manage-cat-name">${esc(c.emoji)} ${esc(c.name)}</div><div class="manage-cat-meta">${c.type === "expense" ? (state.budgets[c.name] != null ? `Límite: ${money(state.budgets[c.name])}` : "Sin límite") : "Categoría de ingreso"}</div></div><div class="manage-cat-actions"><button class="mini-btn" onclick="openEditCategory(decodeURIComponent('${jsArg(c.name)}'))">Editar</button>${c.type === "expense" ? `<button class="mini-btn limit" onclick="openLimit(decodeURIComponent('${jsArg(c.name)}'))">Límite</button>` : ""}<button class="mini-btn delete" onclick="deleteCategory(decodeURIComponent('${jsArg(c.name)}'))">Eliminar</button></div></div>`).join("")}`,
     )
     .join("");
 }
@@ -2747,7 +3055,7 @@ function renderBudget() {
   renderCategoryManager();
 }
 function editTx(id) {
-  const t = state.transactions.find((x) => Number(x.id) === Number(id));
+  const t = state.transactions.find((x) => String(x.id) === String(id));
   if (!t) return;
   $("txType").value = t.type;
   $("txTitle").textContent =
@@ -2763,7 +3071,7 @@ function editTx(id) {
   setTimeout(() => $("txAmount").focus(), 50);
 }
 function deleteTx(id) {
-  const i = state.transactions.findIndex((x) => Number(x.id) === Number(id));
+  const i = state.transactions.findIndex((x) => String(x.id) === String(id));
   if (i < 0) return;
   const t = state.transactions[i];
   if (
@@ -2795,9 +3103,10 @@ function openIncomePlan() {
   setTimeout(() => $("incomeTargetAmount").focus(), 50);
 }
 function saveIncomePlan() {
-  const a = Number($("incomeTargetAmount").value);
-  if (a < 0 || Number.isNaN(a)) {
-    toast("Escribe una estimación válida");
+  const raw = $("incomeTargetAmount").value.trim();
+  const a = Number(raw);
+  if (!raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
+    toast("Escribe una estimación válida; usa 0 para quitarla");
     return;
   }
   state.monthlyIncomeTarget = a;
@@ -3015,7 +3324,7 @@ function importFullBackup(event) {
                 typeof t === "object" &&
                 !Array.isArray(t) &&
                 ["income", "expense", "saving"].includes(t.type) &&
-                Number(t.amount) > 0,
+                Number.isFinite(Number(t.amount)) && Number(t.amount) > 0 && Number(t.amount) <= Number.MAX_SAFE_INTEGER && isValidISODate(t.date) && validAccounts.has(t.account || "cash"),
             )
           ) {
             toast("Un perfil del respaldo está dañado");
@@ -3032,6 +3341,43 @@ function importFullBackup(event) {
           if (d.accounts != null && (typeof d.accounts !== "object" || Array.isArray(d.accounts))) {
             toast("Los saldos de un perfil están dañados");
             return;
+          }
+          if (d.transactions.length > 50000 || d.transactions.some((t) =>
+            (typeof t.id !== "string" && typeof t.id !== "number") ||
+            typeof t.category !== "string" || !t.category.trim() ||
+            (t.description != null && typeof t.description !== "string")
+          )) {
+            toast("Un perfil contiene movimientos con campos no válidos");
+            return;
+          }
+          if (d.categories != null && d.categories.some((c) =>
+            !c || typeof c.name !== "string" || !c.name.trim() ||
+            !["income", "expense", "saving"].includes(c.type) ||
+            (c.emoji != null && typeof c.emoji !== "string")
+          )) {
+            toast("Las categorías de un perfil no son válidas");
+            return;
+          }
+          const nonNegative = (n) => Number.isFinite(Number(n)) && Number(n) >= 0 && Number(n) <= Number.MAX_SAFE_INTEGER;
+          if (!nonNegative(d.monthlyBudget ?? 0) || !nonNegative(d.monthlyIncomeTarget ?? 0)) {
+            toast("Los presupuestos o estimaciones de un perfil no son válidos");
+            return;
+          }
+          if (d.accounts && ["cash", "nequi", "nu"].some((a) => !nonNegative(d.accounts[a] ?? 0))) {
+            toast("Los saldos de un perfil no son válidos");
+            return;
+          }
+          if (d.budgets && Object.values(d.budgets).some((v) => !nonNegative(v))) {
+            toast("Los límites de categoría de un perfil no son válidos");
+            return;
+          }
+          for (const [field, amountField] of [["debts", "total"], ["savingsGoals", "target"], ["recurringExpenses", "amount"]]) {
+            if (d[field] != null && (!Array.isArray(d[field]) || d[field].length > 10000 ||
+              d[field].some((item) => !item || typeof item.name !== "string" ||
+                !item.name.trim() || !nonNegative(item[amountField]) || Number(item[amountField]) <= 0))) {
+              toast("Las deudas, metas o recurrencias de un perfil no son válidas");
+              return;
+            }
           }
         } catch (e) {
           toast("Un perfil del respaldo está dañado");
@@ -3093,7 +3439,11 @@ function exportTransactionsCSV() {
   const csv =
     "\uFEFF" +
     rows
-      .map((row) => row.map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"').join(";"))
+      .map((row) => row.map((v) => {
+        let value = String(v ?? "");
+        if (/^\s*[=+@-]/.test(value)) value = "'" + value;
+        return '"' + value.replace(/"/g, '""') + '"';
+      }).join(";"))
       .join("\r\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }),
     url = URL.createObjectURL(blob),
@@ -3169,7 +3519,7 @@ function renderAnalysis() {
     ? cats
         .map(
           (x) =>
-            `<div class="category-row"><div class="cat-line"><strong>${x.c.emoji} ${esc(x.c.name)}</strong><span>${money(x.val)}</span></div></div>`,
+            `<div class="category-row"><div class="cat-line"><strong>${esc(x.c.emoji)} ${esc(x.c.name)}</strong><span>${money(x.val)}</span></div></div>`,
         )
         .join("")
     : '<div class="empty">Cuando registres gastos, aquí verás en qué categorías estás gastando.</div>';
@@ -3201,7 +3551,7 @@ function renderDebtGoals() {
         .map((d) => {
           const left = debtRemaining(d),
             paid = Number(d.total) - left;
-          return `<div class="category-row"><div class="cat-line"><strong>${esc(d.name)}</strong><strong>${money(left)}</strong></div><div class="movement-meta">Saldo inicial: ${money(d.total)} · Abonado: ${money(paid)}</div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="payDebt('${d.id}')">Registrar abono</button><button class="mini-btn delete" onclick="removeDebt('${d.id}')">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>${esc(d.name)}</strong><strong>${money(left)}</strong></div><div class="movement-meta">Saldo inicial: ${money(d.total)} · Abonado: ${money(paid)}</div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="payDebt(decodeURIComponent('${jsArg(d.id)}'))">Registrar abono</button><button class="mini-btn delete" onclick="removeDebt(decodeURIComponent('${jsArg(d.id)}'))">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Aún no tienes deudas registradas.</div>';
@@ -3210,7 +3560,7 @@ function renderDebtGoals() {
         .map((g) => {
           const saved = goalSaved(g),
             pct = Math.min(100, g.target ? Math.round((saved / g.target) * 100) : 0);
-          return `<div class="category-row"><div class="cat-line"><strong>🎯 ${esc(g.name)}</strong><strong>${pct}%</strong></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="budget-numbers"><span>Ahorrado <strong>${money(saved)}</strong></span><span>Meta <strong>${money(g.target)}</strong></span></div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="contributeGoal('${g.id}')">Aportar ahorro</button><button class="mini-btn delete" onclick="removeGoal('${g.id}')">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>🎯 ${esc(g.name)}</strong><strong>${pct}%</strong></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="budget-numbers"><span>Ahorrado <strong>${money(saved)}</strong></span><span>Meta <strong>${money(g.target)}</strong></span></div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="contributeGoal(decodeURIComponent('${jsArg(g.id)}'))">Aportar ahorro</button><button class="mini-btn delete" onclick="removeGoal(decodeURIComponent('${jsArg(g.id)}'))">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Crea una meta para seguir cuánto llevas ahorrado.</div>';
@@ -3227,7 +3577,7 @@ function renderRecurringExpenses() {
         .map((r) => {
           const done = r.lastRegistered === m,
             due = Math.min(Number(r.day) || 1, lastDay) <= day;
-          return `<div class="category-row"><div class="cat-line"><strong>${esc(r.name)}</strong><strong>${money(r.amount)}</strong></div><div class="movement-meta">Día ${r.day} · ${esc(r.category)} · ${{ cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[r.account] || "Efectivo"}</div><div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px"><button class="mini-btn limit" ${done || !due ? "disabled" : ""} onclick="registerRecurringExpense('${r.id}')">${done ? "Registrado este mes" : due ? "Confirmar cobro" : "Aún no vence"}</button><button class="mini-btn delete" onclick="removeRecurringExpense('${r.id}')">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>${esc(r.name)}</strong><strong>${money(r.amount)}</strong></div><div class="movement-meta">Día ${r.day} · ${esc(r.category)} · ${{ cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[r.account] || "Efectivo"}</div><div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px"><button class="mini-btn limit" ${done || !due ? "disabled" : ""} onclick="registerRecurringExpense(decodeURIComponent('${jsArg(r.id)}'))">${done ? "Registrado este mes" : due ? "Confirmar cobro" : "Aún no vence"}</button><button class="mini-btn delete" onclick="removeRecurringExpense(decodeURIComponent('${jsArg(r.id)}'))">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Aún no tienes gastos recurrentes.</div>';
@@ -3253,13 +3603,13 @@ function addRecurringExpense() {
     const amount = Number(data.amount);
     const day = Number(data.day);
     if (!name) { toast("Ponle un nombre"); return; }
-    if (!(amount > 0)) { toast("Ingresa un valor válido"); return; }
+    if (!Number.isFinite(amount) || !(amount > 0) || amount > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
     if (!Number.isInteger(day) || day < 1 || day > 31) { toast("El día debe estar entre 1 y 31"); return; }
     const category = cats.find((c) => c.name === data.category);
     if (!category) { toast("Elige una categoría de gasto"); return; }
     if (!["cash", "nequi", "nu"].includes(data.account)) { toast("Elige un bolsillo"); return; }
     state.recurringExpenses.push({
-      id: "r_" + Date.now(), name: name.slice(0, 50), amount, day,
+      id: makeId("r"), name: name.slice(0, 50), amount, day,
       category: category.name, account: data.account, lastRegistered: "",
     });
     persist();
@@ -3284,7 +3634,7 @@ function registerRecurringExpense(id) {
   }
   if (!confirm(`¿Confirmas que ya pagaste ${r.name} por ${money(r.amount)}?`)) return;
   state.transactions.push({
-    id: Date.now(),
+    id: makeId("tx"),
     type: "expense",
     amount: r.amount,
     category: r.category,
@@ -3320,8 +3670,8 @@ function addDebt() {
     const name = String(data.name || "").trim();
     const total = Number(data.total);
     if (!name) { toast("Escribe a quién corresponde"); return; }
-    if (!(total > 0)) { toast("Ingresa un valor válido"); return; }
-    state.debts.push({ id: "d_" + Date.now(), name: name.slice(0, 50), total });
+    if (!Number.isFinite(total) || !(total > 0) || total > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
+    state.debts.push({ id: makeId("d"), name: name.slice(0, 50), total });
     persist();
     paint();
     toast("Deuda anotada");
@@ -3353,7 +3703,7 @@ function payDebt(id) {
     if (!state.categories.some((c) => c.name === "Pago de deudas"))
       state.categories.push({ name: "Pago de deudas", type: "expense", emoji: "💳" });
     state.transactions.push({
-      id: Date.now(), type: "expense", amount, category: "Pago de deudas",
+      id: makeId("tx"), type: "expense", amount, category: "Pago de deudas",
       description: "Abono: " + d.name, date: today(), account: data.account, debtId: id,
     });
     persist();
@@ -3387,8 +3737,8 @@ function addSavingsGoal() {
     const name = String(data.name || "").trim();
     const target = Number(data.target);
     if (!name) { toast("Ponle un nombre a la meta"); return; }
-    if (!(target > 0)) { toast("Ingresa un objetivo válido"); return; }
-    state.savingsGoals.push({ id: "g_" + Date.now(), name: name.slice(0, 50), target });
+    if (!Number.isFinite(target) || !(target > 0) || target > Number.MAX_SAFE_INTEGER) { toast("Ingresa un objetivo válido"); return; }
+    state.savingsGoals.push({ id: makeId("g"), name: name.slice(0, 50), target });
     persist();
     paint();
     toast("Meta creada");
@@ -3413,10 +3763,10 @@ function contributeGoal(id) {
   }).then((data) => {
     if (!data) return;
     const amount = Number(data.amount);
-    if (!(amount > 0)) { toast("Ingresa un valor válido"); return; }
+    if (!Number.isFinite(amount) || !(amount > 0) || amount > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
     if (!["cash", "nequi", "nu"].includes(data.account)) { toast("Elige un bolsillo"); return; }
     state.transactions.push({
-      id: Date.now(), type: "saving", amount, category: "Ahorro",
+      id: makeId("tx"), type: "saving", amount, category: "Ahorro",
       description: "Meta: " + g.name, date: today(), account: data.account, goalId: id,
     });
     persist();
@@ -3432,9 +3782,25 @@ function removeGoal(id) {
   toast("Meta eliminada; los ahorros se conservaron");
 }
 function saveWallets() {
-  state.accounts.cash = Math.max(0, Number($("openCash").value) || 0);
-  state.accounts.nequi = Math.max(0, Number($("openNequi").value) || 0);
-  state.accounts.nu = Math.max(0, Number($("openNu").value) || 0);
+  const fields = [
+    ["cash", $("openCash").value],
+    ["nequi", $("openNequi").value],
+    ["nu", $("openNu").value],
+  ];
+  const next = {};
+  for (const [key, raw] of fields) {
+    if (String(raw).trim() === "") {
+      toast("Completa los tres saldos iniciales; usa 0 si no tienes dinero en un bolsillo");
+      return;
+    }
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) {
+      toast("Los saldos deben ser cantidades válidas y no negativas");
+      return;
+    }
+    next[key] = value;
+  }
+  state.accounts = next;
   persist();
   paint();
   toast("Saldos guardados");
@@ -3950,16 +4316,16 @@ window.addEventListener("resize", placeLiquid);
 
 </script>
 <!-- ==================== FIN FUNCIONAMIENTO ==================== -->
-
 <script>
-  // El service worker solo se registra en navegador web; Capacitor usa sus recursos locales.
+  // PWA: la caché permite abrir la interfaz sin conexión tras la primera carga.
   if ("serviceWorker" in navigator && !window.Capacitor &&
       (location.protocol === "https:" || location.hostname === "localhost")) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+        console.warn("No se pudo registrar el modo sin conexión:", error);
+      });
     });
   }
 </script>
-
 </body>
 </html>

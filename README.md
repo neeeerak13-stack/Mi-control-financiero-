@@ -1,39 +1,37 @@
 # Mi Control Financiero
 
-Proyecto preparado a partir del ZIP que compartiste. **La interfaz original se conserva**: no se rediseñaron colores, tipografías, disposición, pestañas, textos, iconos ni el personaje Nilo. Solo se añadieron archivos técnicos para instalación web/offline y compilación Android.
+Aplicación local de finanzas personales. Esta entrega integra la interfaz oficial suministrada (`index.html`) con la lógica de la versión anterior del ZIP, sin recuperar la interfaz antigua.
 
-## Qué contiene esta versión
+## Ejecutar en un navegador
 
-- `www/index.html`: interfaz y lógica de la aplicación original.
-- `www/manifest.webmanifest` y `www/service-worker.js`: instalación como PWA y caché básica para abrir la app sin conexión después de la primera carga.
-- `capacitor.config.json`: configuración de Capacitor para Android.
-- `.github/workflows/build-android.yml`: compila automáticamente un APK de prueba en GitHub Actions.
-- `scripts/apply-android-icons.py`: aplica a Android el icono de Nilo derivado del SVG de la interfaz.
-- `tests/smoke.mjs`: comprobaciones estáticas y pruebas de cálculos financieros básicos.
+1. Instala Node.js 22 si todavía no lo tienes.
+2. Abre una terminal en la carpeta del proyecto.
+3. Para ejecutar las pruebas: `npm test`.
+4. Para abrir la aplicación, sirve la carpeta `www` desde `localhost` (por ejemplo, `python -m http.server 8000` dentro de `www`) y visita `http://localhost:8000`.
 
-## Funciones que ya vienen en el HTML
+El modo instalable/offline (PWA) requiere `localhost` o un sitio HTTPS. La primera carga necesita conexión para descargar las tipografías de Google Fonts; si no están disponibles, se usan las fuentes alternativas del CSS.
 
-Perfiles locales, ingresos, gastos, ahorros, bolsillos de efectivo/Nequi/Nu, categorías, presupuesto mensual y por categoría, estimación de ingresos, análisis, reportes, deudas, metas de ahorro, gastos recurrentes, Nilo, exportación CSV y respaldo/restauración JSON.
+## Estructura
 
-## Subir a GitHub y descargar el APK
+- `www/index.html`: interfaz oficial y lógica de la aplicación.
+- `www/manifest.webmanifest`: metadatos de instalación PWA.
+- `www/service-worker.js`: caché de la interfaz para uso offline después de la primera carga.
+- `www/assets/`: iconos de la aplicación.
+- `tests/smoke.mjs`: sintaxis, referencias DOM, handlers, pestañas y huella del CSS oficial.
+- `tests/functional-regression.mjs`: pruebas de lógica financiera, perfiles, CSV y respaldo/restauración.
+- `docs/`: inventario, auditoría de seguridad, limitaciones e informe de pruebas.
+- `capacitor.config.json` y `.github/workflows/build-android.yml`: configuración y flujo de compilación Android.
 
-1. Descomprime este ZIP.
-2. Crea un repositorio nuevo en GitHub.
-3. Sube **todo el contenido de esta carpeta** (no solo `index.html`) a la rama `main`.
-4. Abre la pestaña **Actions** del repositorio.
-5. Selecciona **Build Android APK** y pulsa **Run workflow**; también se ejecuta automáticamente al subir cambios a `main`.
-6. Cuando termine en verde, abre la ejecución y descarga el artefacto `mi-control-financiero-debug-apk`.
-7. Descomprime el artefacto y encontrarás `app-debug.apk`. Instálalo en Android habilitando la instalación desde esa fuente.
+## Android
 
-El APK generado por este flujo es de **depuración (debug)**, instalable para pruebas. No es un APK firmado para publicación en Play Store. Para distribución pública se debe configurar una firma de release con secretos de GitHub.
+El ZIP incluye configuración Capacitor y un workflow de GitHub Actions que crea el proyecto Android, sincroniza `www` y compila un APK `debug`. El directorio nativo `android/` no viene incluido: lo genera el workflow o el comando `npx cap add android`.
 
-## Requisitos para compilar localmente
+Requisitos para compilar localmente:
+- Node.js 22.
+- Java 21.
+- Android SDK / Android Studio.
 
-- Node.js 22
-- Java 21
-- Android SDK / Android Studio
-
-Comandos:
+Comandos habituales:
 
 ```bash
 npm install
@@ -45,16 +43,18 @@ cd android
 ./gradlew assembleDebug
 ```
 
-## Datos y privacidad
+El APK debug es para pruebas, no está firmado para publicación en Play Store. Esta entrega no incluye un APK compilado ni una firma de release.
 
-La versión recibida guarda los datos en el almacenamiento local del navegador/dispositivo (`localStorage`). La exportación de respaldo JSON es importante para conservar o trasladar esos datos. La caché offline no sincroniza datos entre dispositivos.
+## Datos, privacidad y límites
 
-## Integraciones bancarias y nube
+- Los datos se guardan en `localStorage` del navegador/dispositivo. **No están cifrados por la aplicación.**
+- Los perfiles separan los datos mediante claves distintas de `localStorage`, pero no son cuentas autenticadas ni una barrera de seguridad frente a alguien con acceso al mismo navegador o dispositivo.
+- No hay sincronización en la nube, base de datos remota, autenticación externa ni conexión bancaria/Belvo en los archivos de esta entrega.
+- Nilo funciona con reglas locales y datos registrados; no es un servicio de IA conectado a internet.
+- Los gastos recurrentes son recordatorios: no se registran ni descuentan automáticamente.
+- Exporta respaldos JSON con regularidad y guárdalos en un lugar privado. El archivo de respaldo contiene información financiera legible y no está cifrado.
+- No compartas el dispositivo desbloqueado ni los archivos de respaldo con otras personas.
 
-El ZIP recibido no contiene cliente Supabase, autenticación, llamadas `fetch`, ni flujo de conexión Belvo. En el trabajo anterior existía una configuración de Supabase con funciones Edge de Belvo; el proyecto asociado estaba pausado y se solicitó su restauración. El estado de esas funciones y el esquema debe verificarse una vez que el proyecto termine de iniciar.
+## Auditoría y pruebas
 
-No se han puesto claves privadas ni `service_role` dentro del frontend. La conexión real de bancos/sincronización no se declara terminada en esta entrega: requiere verificar el backend activo y acordar cómo autenticar al usuario sin cambiar la pantalla inicial aprobada.
-
-## Alcance de las pruebas
-
-Se comprueba la sintaxis del JavaScript, que los selectores estáticos apunten a elementos existentes, que los handlers declarados tengan funciones y varios cálculos financieros básicos. No equivale a una prueba manual completa en un teléfono, ni a una prueba de conexión bancaria real.
+Consulta `docs/AUDITORIA_SEGURIDAD.md`, `docs/MATRIZ_FUNCIONAL.md` y `docs/RESULTADOS_PRUEBAS.md`. Las pruebas automatizadas de Node se ejecutan con `npm test`. No equivalen a una validación manual completa en Android ni a una certificación de seguridad o producción.
