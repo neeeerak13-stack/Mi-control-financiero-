@@ -26,7 +26,7 @@ El repositorio incluye `.github/workflows/build-android.yml`. Para compilar:
 
 1. Descomprime este ZIP.
 2. Sube el contenido de la carpeta `mi-control-financiero-github` a un repositorio GitHub nuevo, en la rama `main`.
-3. Abre **Actions** y selecciona **Build Android APK**.
+3. Abre **Actions** y selecciona **Build Android APK**. El flujo también se ejecuta al hacer push a cualquier rama (incluida `principal`). Asegúrate de que `.github/workflows/build-android.yml` esté en la raíz del repositorio.
 4. Pulsa **Run workflow** y espera a que termine el proceso.
 5. Si la ejecución termina correctamente, descarga el artefacto `mi-control-financiero-debug-apk`.
 6. Descomprime el artefacto y encontrarás `app-debug.apk`, listo para instalar como versión de prueba en Android.
