@@ -4,7 +4,7 @@
   "private": true,
   "description": "Mi Control Financiero - aplicación Android y web",
   "scripts": {
-    "test": "node tests/smoke.mjs && node tests/functional-regression.mjs",
+    "test": "node tests/smoke.mjs && node tests/extended.mjs",
     "android:add": "cap add android",
     "android:sync": "cap sync android",
     "android:open": "cap open android"

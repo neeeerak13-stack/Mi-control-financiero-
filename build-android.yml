@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Instalar Android SDK
         uses: android-actions/setup-android@v3
@@ -36,6 +36,9 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Preparar herramienta de iconos
+        run: python -m pip install --disable-pip-version-check Pillow
 
       - name: Aplicar iconos originales de Nilo
         run: python scripts/apply-android-icons.py

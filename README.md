@@ -1,60 +1,61 @@
 # Mi Control Financiero
 
-Aplicación local de finanzas personales. Esta entrega integra la interfaz oficial suministrada (`index.html`) con la lógica de la versión anterior del ZIP, sin recuperar la interfaz antigua.
+Aplicación local de finanzas personales preparada para ejecutarse como web/PWA y compilarse como APK Android mediante Capacitor.
 
-## Ejecutar en un navegador
+## Interfaz y funcionalidades
 
-1. Instala Node.js 22 si todavía no lo tienes.
-2. Abre una terminal en la carpeta del proyecto.
-3. Para ejecutar las pruebas: `npm test`.
-4. Para abrir la aplicación, sirve la carpeta `www` desde `localhost` (por ejemplo, `python -m http.server 8000` dentro de `www`) y visita `http://localhost:8000`.
+- `www/index.html` contiene la interfaz oficial de cinco pestañas (Inicio, Análisis, Plan/Presupuesto, Lista/Movimientos y Cuenta) y la lógica JavaScript integrada.
+- Se conservó la interfaz del archivo oficial `index(20261109-171845).html`; no se recuperó la pantalla antigua.
+- Incluye registro y edición de ingresos, gastos y ahorros; bolsillos de efectivo, Nequi y Nu; categorías; presupuestos; análisis; reportes mensuales; perfiles locales; deudas y abonos; metas de ahorro; recordatorios de gastos recurrentes; Nilo; exportación CSV y respaldo/restauración JSON.
+- Los recordatorios recurrentes no hacen cobros automáticos: el usuario confirma cada pago.
+- No requiere Belvo, Supabase, conexión bancaria, autenticación externa ni servicios de terceros.
 
-El modo instalable/offline (PWA) requiere `localhost` o un sitio HTTPS. La primera carga necesita conexión para descargar las tipografías de Google Fonts; si no están disponibles, se usan las fuentes alternativas del CSS.
+## Ejecutar pruebas
 
-## Estructura
-
-- `www/index.html`: interfaz oficial y lógica de la aplicación.
-- `www/manifest.webmanifest`: metadatos de instalación PWA.
-- `www/service-worker.js`: caché de la interfaz para uso offline después de la primera carga.
-- `www/assets/`: iconos de la aplicación.
-- `tests/smoke.mjs`: sintaxis, referencias DOM, handlers, pestañas y huella del CSS oficial.
-- `tests/functional-regression.mjs`: pruebas de lógica financiera, perfiles, CSV y respaldo/restauración.
-- `docs/`: inventario, auditoría de seguridad, limitaciones e informe de pruebas.
-- `capacitor.config.json` y `.github/workflows/build-android.yml`: configuración y flujo de compilación Android.
-
-## Android
-
-El ZIP incluye configuración Capacitor y un workflow de GitHub Actions que crea el proyecto Android, sincroniza `www` y compila un APK `debug`. El directorio nativo `android/` no viene incluido: lo genera el workflow o el comando `npx cap add android`.
-
-Requisitos para compilar localmente:
-- Node.js 22.
-- Java 21.
-- Android SDK / Android Studio.
-
-Comandos habituales:
+Requiere Node.js 22 o superior:
 
 ```bash
-npm install
+npm test
+```
+
+Las pruebas verifican sintaxis, referencias DOM, handlers, navegación y cálculos financieros seleccionados. Son pruebas automatizadas de lógica y estructura; no sustituyen pruebas manuales en un teléfono Android.
+
+## Generar el APK de prueba
+
+El repositorio incluye `.github/workflows/build-android.yml`. Para compilar:
+
+1. Descomprime este ZIP.
+2. Sube el contenido de la carpeta `mi-control-financiero-github` a un repositorio GitHub nuevo, en la rama `main`.
+3. Abre **Actions** y selecciona **Build Android APK**.
+4. Pulsa **Run workflow** y espera a que termine el proceso.
+5. Si la ejecución termina correctamente, descarga el artefacto `mi-control-financiero-debug-apk`.
+6. Descomprime el artefacto y encontrarás `app-debug.apk`, listo para instalar como versión de prueba en Android.
+
+El APK de ese flujo es **debug**, no está firmado para distribución en Play Store. Para publicar una versión release se debe configurar una firma Android propia y proteger las claves de firma como secretos; nunca incluirlas en este ZIP ni en el repositorio.
+
+### Compilación local (opcional)
+
+Requiere Node.js 22, Java 21 y Android SDK/Android Studio:
+
+```bash
+npm install --no-audit --no-fund
 npx cap add android
 npx cap sync android
+python -m pip install Pillow
 python scripts/apply-android-icons.py
 npm test
 cd android
 ./gradlew assembleDebug
 ```
 
-El APK debug es para pruebas, no está firmado para publicación en Play Store. Esta entrega no incluye un APK compilado ni una firma de release.
+## Datos y seguridad
 
-## Datos, privacidad y límites
+- Los datos financieros se guardan localmente en `localStorage` dentro del almacenamiento de la aplicación. No hay sincronización en la nube.
+- `localStorage` **no cifra por sí mismo** los datos. La app no debe describirse como almacenamiento cifrado ni como una caja fuerte. Protege el teléfono con bloqueo de pantalla, evita compartir el dispositivo desbloqueado y conserva los respaldos JSON en un lugar privado.
+- El respaldo incluye los perfiles y datos locales. Restaurarlo reemplaza los datos de la instalación actual; crea un respaldo antes de restaurar.
+- La exportación CSV contiene movimientos del perfil activo.
+- El service worker almacena el shell de la aplicación para permitir su apertura offline después de la primera carga; no sincroniza ni cifra datos financieros.
 
-- Los datos se guardan en `localStorage` del navegador/dispositivo. **No están cifrados por la aplicación.**
-- Los perfiles separan los datos mediante claves distintas de `localStorage`, pero no son cuentas autenticadas ni una barrera de seguridad frente a alguien con acceso al mismo navegador o dispositivo.
-- No hay sincronización en la nube, base de datos remota, autenticación externa ni conexión bancaria/Belvo en los archivos de esta entrega.
-- Nilo funciona con reglas locales y datos registrados; no es un servicio de IA conectado a internet.
-- Los gastos recurrentes son recordatorios: no se registran ni descuentan automáticamente.
-- Exporta respaldos JSON con regularidad y guárdalos en un lugar privado. El archivo de respaldo contiene información financiera legible y no está cifrado.
-- No compartas el dispositivo desbloqueado ni los archivos de respaldo con otras personas.
+## Límites de verificación de esta entrega
 
-## Auditoría y pruebas
-
-Consulta `docs/AUDITORIA_SEGURIDAD.md`, `docs/MATRIZ_FUNCIONAL.md` y `docs/RESULTADOS_PRUEBAS.md`. Las pruebas automatizadas de Node se ejecutan con `npm test`. No equivalen a una validación manual completa en Android ni a una certificación de seguridad o producción.
+Se ejecutan pruebas automatizadas del código y de cálculos seleccionados. En este entorno no hay Android SDK instalado, por lo que no se ha compilado ni instalado un APK real aquí. El workflow de GitHub está preparado para producir el APK debug en un runner con Android SDK. Antes de usar datos financieros reales, instala el APK generado y prueba manualmente los flujos de alta/edición/eliminación, perfiles, respaldo y restauración en tu teléfono.

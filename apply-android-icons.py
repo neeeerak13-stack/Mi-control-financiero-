@@ -1,10 +1,9 @@
 from pathlib import Path
-import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 ANDROID_RES = ROOT / "android" / "app" / "src" / "main" / "res"
-FOREGROUND = ROOT / "resources-icon-foreground.png"
-FULL_ICON = ROOT / "resources-icon.png"
+FOREGROUND = ROOT / "resources" / "icon-foreground.png"
+FULL_ICON = ROOT / "resources" / "icon.png"
 
 if not ANDROID_RES.exists():
     raise SystemExit("No existe android/app/src/main/res. Ejecuta primero: npx cap add android")

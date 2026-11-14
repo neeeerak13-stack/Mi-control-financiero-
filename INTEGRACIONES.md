@@ -1,21 +1,20 @@
-# Integraciones y almacenamiento
+# Alcance de integraciones
 
-## Estado comprobado en los archivos entregados
+La aplicación se entrega como una herramienta financiera local. No necesita ni incluye conexiones bancarias, Belvo, Supabase, autenticación externa ni sincronización en la nube.
 
-La aplicación funciona como aplicación local. El código del ZIP y la nueva interfaz no contienen una implementación verificable de:
-- Sincronización con una nube o base de datos remota.
-- Autenticación de usuarios.
-- Conexión bancaria mediante Belvo.
-- Cliente Supabase, llamadas de sincronización remota o funciones backend incluidas en el paquete.
+## Datos locales
 
-No se añadió ninguna integración externa ni se simularon conexiones bancarias. Las cuentas Efectivo, Nequi y Nu son bolsillos locales de registro, no conexiones con esos proveedores.
+Los perfiles y sus datos se guardan en `localStorage` del contenedor de la aplicación. Cada perfil utiliza una clave independiente. La exportación JSON incluye los perfiles locales; la restauración valida el formato y reemplaza los datos de la instalación actual después de pedir confirmación.
 
-## Almacenamiento
+## Seguridad
 
-Los perfiles y movimientos se guardan en `localStorage`. El service worker almacena archivos de la aplicación para abrir la interfaz offline, pero no sincroniza ni respalda los datos financieros.
+`localStorage` no cifra datos por sí mismo. No se deben añadir secretos, contraseñas bancarias ni claves privadas al frontend. Para proteger los datos, el usuario debe mantener bloqueado el teléfono y guardar las copias de seguridad en una ubicación privada.
 
-La exportación JSON permite trasladar datos entre instalaciones manualmente. El archivo es legible y no tiene cifrado.
+## Funciones que deliberadamente no se integran
 
-## Si en el futuro se autoriza sincronización
+- Enlace de cuentas bancarias o lectura automática de movimientos.
+- Belvo u otros agregadores bancarios.
+- Supabase u otra base de datos remota.
+- Inicio de sesión externo y sincronización multi-dispositivo.
 
-Se requerirá diseñar y auditar una arquitectura backend, autenticación, autorización por propietario, reglas de acceso a filas, cifrado en tránsito, gestión de secretos y estrategia de conflictos/sincronización. Ninguna de esas capacidades debe declararse disponible hasta implementarse y probarse.
+Estas funciones no son necesarias para el alcance actual de Mi Control Financiero.

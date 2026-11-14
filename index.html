@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#070908" />
   <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -2239,20 +2241,6 @@ const money = (n) =>
     .format(Number(n) || 0)
     .replace("COP", "")
     .trim();
-const validAccounts = new Set(["cash", "nequi", "nu"]);
-const validTransactionTypes = new Set(["income", "expense", "saving"]);
-function isValidISODate(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const [y, m, d] = value.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
-}
-function makeId(prefix = "m") {
-  const random = globalThis.crypto && typeof crypto.randomUUID === "function"
-    ? crypto.randomUUID()
-    : Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
-  return prefix + "_" + random;
-}
 const esc = (s) =>
   String(s ?? "").replace(
     /[&<>'"]/g,
@@ -2365,29 +2353,90 @@ function load() {
   }
 }
 function migrateLegacy() {
+  const validTypes = ["income", "expense", "saving"];
+  const validAccounts = ["cash", "nequi", "nu"];
+  const cleanName = (value, fallback) => String(value ?? fallback).trim().slice(0, 60) || fallback;
+  const validDate = (value) => {
+    const raw = String(value || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return today();
+    const parsed = new Date(raw + "T00:00:00");
+    return !Number.isNaN(parsed.getTime()) && todayFor(parsed) === raw ? raw : today();
+  };
+
+  const rawCategories = Array.isArray(state.categories) ? state.categories : [];
+  state.categories = rawCategories
+    .filter((c) => c && typeof c === "object" && validTypes.includes(c.type) && String(c.name || "").trim())
+    .map((c) => {
+      const name = cleanName(c.name, "Otros gastos");
+      return { name, type: c.type, emoji: emojiForCategory(name, c.type) };
+    });
   if (!state.categories.length)
-    state.categories = DEFAULT_CATEGORIES.map((c) => ({
-      ...c,
-      emoji: emojiForCategory(c.name, c.type),
-    }));
-  state.categories = state.categories.map((c) => ({
-    ...c,
-    emoji: c.emoji || emojiForCategory(c.name, c.type),
-  }));
+    state.categories = DEFAULT_CATEGORIES.map((c) => ({ ...c, emoji: emojiForCategory(c.name, c.type) }));
   const ensure = (name, type) => {
-    if (!state.categories.some((c) => c.name === name))
+    if (!state.categories.some((c) => c.name === name && c.type === type))
       state.categories.push({ name, type, emoji: emojiForCategory(name, type) });
   };
   ensure("Otros gastos", "expense");
   ensure("Otros ingresos", "income");
   ensure("Ahorro", "saving");
-  state.transactions = state.transactions.map((t) => ({
-    ...t,
-    id: t.id || Date.now() + Math.random(),
-    account: t.account || "cash",
+
+  const seenTransactionIds = new Set();
+  state.transactions = (Array.isArray(state.transactions) ? state.transactions : [])
+    .filter((t) => t && typeof t === "object" && validTypes.includes(t.type) && Number.isFinite(Number(t.amount)) && Number(t.amount) > 0)
+    .map((t, index) => {
+      let id = Number(t.id);
+      if (!Number.isFinite(id) || seenTransactionIds.has(id)) id = Date.now() + index + Math.random();
+      seenTransactionIds.add(id);
+      const category = cleanName(t.category, t.type === "saving" ? "Ahorro" : t.type === "income" ? "Otros ingresos" : "Otros gastos");
+      return {
+        ...t,
+        id,
+        type: t.type,
+        amount: Number(t.amount),
+        category,
+        description: String(t.description ?? category).slice(0, 140),
+        date: validDate(t.date),
+        account: validAccounts.includes(t.account) ? t.account : "cash",
+        ...(typeof t.debtId === "string" ? { debtId: t.debtId.slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, "_") } : {}),
+        ...(typeof t.goalId === "string" ? { goalId: t.goalId.slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, "_") } : {}),
+        ...(typeof t.recurringId === "string" ? { recurringId: t.recurringId.slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, "_") } : {}),
+      };
+    });
+
+  state.accounts = Object.fromEntries(validAccounts.map((key) => {
+    const value = Number(state.accounts?.[key]);
+    return [key, Number.isFinite(value) && value >= 0 ? value : 0];
   }));
-  if (!state.accounts) state.accounts = { cash: 0, nequi: 0, nu: 0 };
+  state.budgets = Object.fromEntries(Object.entries(state.budgets && typeof state.budgets === "object" && !Array.isArray(state.budgets) ? state.budgets : {})
+    .filter(([key, value]) => typeof key === "string" && Number.isFinite(Number(value)) && Number(value) > 0)
+    .map(([key, value]) => [key.slice(0, 60), Number(value)]));
+  for (const key of ["monthlyBudget", "monthlyIncomeTarget"]) {
+    const value = Number(state[key]);
+    state[key] = Number.isFinite(value) && value >= 0 ? value : 0;
+  }
+  state.monthlyReports = Object.fromEntries(Object.entries(state.monthlyReports && typeof state.monthlyReports === "object" && !Array.isArray(state.monthlyReports) ? state.monthlyReports : {})
+    .filter(([key]) => /^\d{4}-\d{2}$/.test(key)));
+
+  const cleanRecords = (records, kind) => (Array.isArray(records) ? records : [])
+    .filter((item) => item && typeof item === "object" && String(item.id || "").length <= 80)
+    .map((item, index) => {
+      const id = String(item.id || `${kind}_${Date.now()}_${index}`).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const name = cleanName(item.name, kind === "d" ? "Deuda" : kind === "g" ? "Meta" : "Gasto recurrente");
+      const amount = Number(kind === "d" ? item.total : kind === "g" ? item.target : item.amount);
+      if (!Number.isFinite(amount) || amount <= 0) return null;
+      if (kind === "r") {
+        const day = Number(item.day);
+        if (!Number.isInteger(day) || day < 1 || day > 31) return null;
+        return { id, name, amount, day, category: cleanName(item.category, "Otros gastos"), account: validAccounts.includes(item.account) ? item.account : "cash", lastRegistered: /^\d{4}-\d{2}$/.test(item.lastRegistered || "") ? item.lastRegistered : "" };
+      }
+      return kind === "d" ? { id, name, total: amount } : { id, name, target: amount };
+    })
+    .filter(Boolean);
+  state.debts = cleanRecords(state.debts, "d");
+  state.savingsGoals = cleanRecords(state.savingsGoals, "g");
+  state.recurringExpenses = cleanRecords(state.recurringExpenses, "r");
 }
+
 function persist() {
   localStorage.setItem(
     KEY,
@@ -2658,7 +2707,7 @@ function movementHTML(t) {
   const c = categoryObj(t.category),
     sign = t.type === "income" ? "+" : "−";
   const account = { cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[t.account || "cash"] || "Efectivo";
-  return `<div class="movement-card"><div class="movement-icon">${esc(c.emoji)}</div><div class="movement-main"><div class="movement-name">${esc(t.description || t.category)}</div><div class="movement-meta">${esc(t.type === "saving" ? "Ahorro" : t.category)} · ${esc(account)} · ${esc(t.date)}</div><div class="movement-actions"><button class="movement-action" onclick="editTx(decodeURIComponent('${jsArg(t.id)}'))">Editar</button><button class="movement-action delete" onclick="deleteTx(decodeURIComponent('${jsArg(t.id)}'))">Eliminar</button></div></div><div class="movement-amount ${t.type === "saving" ? "saving" : t.type}">${sign} ${money(t.amount)}</div></div>`;
+  return `<div class="movement-card"><div class="movement-icon">${c.emoji}</div><div class="movement-main"><div class="movement-name">${esc(t.description || t.category)}</div><div class="movement-meta">${esc(t.type === "saving" ? "Ahorro" : t.category)} · ${esc(account)} · ${esc(t.date)}</div><div class="movement-actions"><button class="movement-action" onclick="editTx(${Number(t.id)})">Editar</button><button class="movement-action delete" onclick="deleteTx(${Number(t.id)})">Eliminar</button></div></div><div class="movement-amount ${t.type === "saving" ? "saving" : t.type}">${sign} ${money(t.amount)}</div></div>`;
 }
 function paint() {
   const n = localStorage.getItem(NAME_KEY) || "";
@@ -2726,7 +2775,7 @@ function refreshTxCategories() {
   const type = $("txType").value;
   const cats = state.categories.filter((c) => c.type === type);
   $("txCategory").innerHTML =
-    cats.map((c) => `<option value="${esc(c.name)}">${esc(c.emoji)} ${esc(c.name)}</option>`).join("") ||
+    cats.map((c) => `<option value="${esc(c.name)}">${c.emoji} ${esc(c.name)}</option>`).join("") ||
     (type === "saving"
       ? '<option value="Ahorro">🎯 Ahorro</option>'
       : '<option value="Otros gastos">📌 Otros gastos</option>');
@@ -2749,58 +2798,52 @@ function openTx(type = "expense") {
   setTimeout(() => $("txAmount").focus(), 50);
 }
 function saveTx() {
-  const rawAmount = $("txAmount").value.trim();
-  const amount = Number(rawAmount);
-  const type = $("txType").value;
+  const amount = Number($("txAmount").value),
+    type = $("txType").value;
+  if (!Number.isFinite(amount) || !(amount > 0)) {
+    toast("Escribe un monto válido");
+    return;
+  }
   const cat = $("txCategory").value;
+  const date = $("txDate").value || today();
   const account = $("txAccount").value;
-  const date = $("txDate").value;
+  const parsedDate = new Date(date + "T00:00:00");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsedDate.getTime()) || todayFor(parsedDate) !== date) {
+    toast("Elige una fecha válida");
+    return;
+  }
+  if (!["cash", "nequi", "nu"].includes(account)) {
+    toast("Elige un bolsillo válido");
+    return;
+  }
+  if (!state.categories.some((c) => c.name === cat && c.type === type)) {
+    toast("Elige una categoría válida para este movimiento");
+    return;
+  }
   const editId = $("txModal").dataset.editId;
-  if (!rawAmount || !Number.isFinite(amount) || amount <= 0 || amount > Number.MAX_SAFE_INTEGER) {
-    toast("Escribe un monto válido mayor que cero");
-    return;
-  }
-  if (!validTransactionTypes.has(type)) {
-    toast("Selecciona un tipo de movimiento válido");
-    return;
-  }
-  const category = state.categories.find((c) => c.name === cat && c.type === type);
-  if (!category) {
-    toast("Selecciona una categoría válida para este movimiento");
-    return;
-  }
-  if (!validAccounts.has(account)) {
-    toast("Selecciona un bolsillo válido");
-    return;
-  }
-  if (!isValidISODate(date)) {
-    toast("Selecciona una fecha válida");
-    return;
-  }
   if (editId) {
     const t = state.transactions.find((x) => String(x.id) === String(editId));
-    if (!t) {
-      toast("No encontramos el movimiento que intentas editar");
-      return;
+    if (t) {
+      const previousType = t.type;
+      t.type = type;
+      t.amount = amount;
+      t.category = cat;
+      t.description = $("txDescription").value.trim() || cat;
+      t.date = date;
+      t.account = account;
+      if (type !== "expense") {
+        delete t.debtId;
+        delete t.recurringId;
+      }
+      if (type !== "saving") delete t.goalId;
     }
-    t.type = type;
-    t.amount = amount;
-    t.category = cat;
-    t.description = $("txDescription").value.trim().slice(0, 120) || cat;
-    t.date = date;
-    t.account = account;
-    if (type !== "expense") {
-      delete t.debtId;
-      delete t.recurringId;
-    }
-    if (type !== "saving") delete t.goalId;
   } else {
     state.transactions.push({
-      id: makeId("tx"),
+      id: Date.now(),
       type,
       amount,
       category: cat,
-      description: $("txDescription").value.trim().slice(0, 120) || cat,
+      description: $("txDescription").value.trim() || cat,
       date,
       account,
     });
@@ -2826,10 +2869,9 @@ function openMonthlyBudget() {
   setTimeout(() => $("monthlyAmount").focus(), 50);
 }
 function saveMonthlyBudget() {
-  const raw = $("monthlyAmount").value.trim();
-  const a = Number(raw);
-  if (!raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
-    toast("Escribe un presupuesto válido; usa 0 para quitarlo");
+  const a = Number($("monthlyAmount").value);
+  if (!Number.isFinite(a) || a < 0) {
+    toast("Escribe un presupuesto válido");
     return;
   }
   state.monthlyBudget = a;
@@ -2872,7 +2914,7 @@ function openEditCategory(name) {
 function openLimit(categoryName = "") {
   const cats = state.categories.filter((c) => c.type === "expense");
   $("limitCategory").innerHTML = cats
-    .map((c) => `<option value="${esc(c.name)}">${esc(c.emoji)} ${esc(c.name)}</option>`)
+    .map((c) => `<option value="${esc(c.name)}">${c.emoji} ${esc(c.name)}</option>`)
     .join("");
   if (categoryName && cats.some((c) => c.name === categoryName))
     $("limitCategory").value = categoryName;
@@ -2882,12 +2924,10 @@ function openLimit(categoryName = "") {
   setTimeout(() => $("limitAmount").focus(), 50);
 }
 function saveLimit() {
-  const c = $("limitCategory").value;
-  const raw = $("limitAmount").value.trim();
-  const a = Number(raw);
-  if (!state.categories.some((x) => x.name === c && x.type === "expense") ||
-      !raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
-    toast("Escribe un límite válido; usa 0 para quitarlo");
+  const c = $("limitCategory").value,
+    a = Number($("limitAmount").value);
+  if (!c || !Number.isFinite(a) || a < 0) {
+    toast("Escribe un límite válido");
     return;
   }
   if (a === 0) delete state.budgets[c];
@@ -2910,10 +2950,6 @@ function saveCategory() {
     toast("Ponle un nombre a la categoría");
     return;
   }
-  if (!["income", "expense", "saving"].includes(type)) {
-    toast("Selecciona un tipo de categoría válido");
-    return;
-  }
   if (categoryMode === "create") {
     if (state.categories.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
       toast("Esa categoría ya existe");
@@ -2921,6 +2957,11 @@ function saveCategory() {
     }
     state.categories.push({ name, type, emoji: emojiForCategory(name, type) });
     const limit = Number($("categoryLimit").value) || 0;
+    if (!Number.isFinite(limit) || limit < 0) {
+      state.categories.pop();
+      toast("El límite debe ser un valor válido");
+      return;
+    }
     if (type === "expense" && limit > 0) state.budgets[name] = limit;
     persist();
     closeModal("categoryModal");
@@ -2994,7 +3035,7 @@ function deleteCategory(name) {
     return;
   }
   const hasTx = state.transactions.filter((t) => t.category === name);
-  let msg = `¿Eliminar ${esc(c.emoji)} ${name}?`;
+  let msg = `¿Eliminar ${c.emoji} ${name}?`;
   if (hasTx.length)
     msg += `\n\nTiene ${hasTx.length} movimiento${hasTx.length === 1 ? "" : "s"}. No se borrarán: se moverán a ${fallback} para conservar todos tus datos.`;
   if (!confirm(msg)) return;
@@ -3022,7 +3063,7 @@ function renderCategoryManager() {
   $("categoryManagerList").innerHTML = groups
     .map(
       ([title, cats]) =>
-        `<div class="group-label">${title}</div>${cats.map((c) => `<div class="manage-cat"><div class="manage-cat-main"><div class="manage-cat-name">${esc(c.emoji)} ${esc(c.name)}</div><div class="manage-cat-meta">${c.type === "expense" ? (state.budgets[c.name] != null ? `Límite: ${money(state.budgets[c.name])}` : "Sin límite") : "Categoría de ingreso"}</div></div><div class="manage-cat-actions"><button class="mini-btn" onclick="openEditCategory(decodeURIComponent('${jsArg(c.name)}'))">Editar</button>${c.type === "expense" ? `<button class="mini-btn limit" onclick="openLimit(decodeURIComponent('${jsArg(c.name)}'))">Límite</button>` : ""}<button class="mini-btn delete" onclick="deleteCategory(decodeURIComponent('${jsArg(c.name)}'))">Eliminar</button></div></div>`).join("")}`,
+        `<div class="group-label">${title}</div>${cats.map((c) => `<div class="manage-cat"><div class="manage-cat-main"><div class="manage-cat-name">${c.emoji} ${esc(c.name)}</div><div class="manage-cat-meta">${c.type === "expense" ? (state.budgets[c.name] != null ? `Límite: ${money(state.budgets[c.name])}` : "Sin límite") : "Categoría de ingreso"}</div></div><div class="manage-cat-actions"><button class="mini-btn" onclick="openEditCategory(decodeURIComponent('${jsArg(c.name)}'))">Editar</button>${c.type === "expense" ? `<button class="mini-btn limit" onclick="openLimit(decodeURIComponent('${jsArg(c.name)}'))">Límite</button>` : ""}<button class="mini-btn delete" onclick="deleteCategory(decodeURIComponent('${jsArg(c.name)}'))">Eliminar</button></div></div>`).join("")}`,
     )
     .join("");
 }
@@ -3055,7 +3096,7 @@ function renderBudget() {
   renderCategoryManager();
 }
 function editTx(id) {
-  const t = state.transactions.find((x) => String(x.id) === String(id));
+  const t = state.transactions.find((x) => Number(x.id) === Number(id));
   if (!t) return;
   $("txType").value = t.type;
   $("txTitle").textContent =
@@ -3071,7 +3112,7 @@ function editTx(id) {
   setTimeout(() => $("txAmount").focus(), 50);
 }
 function deleteTx(id) {
-  const i = state.transactions.findIndex((x) => String(x.id) === String(id));
+  const i = state.transactions.findIndex((x) => Number(x.id) === Number(id));
   if (i < 0) return;
   const t = state.transactions[i];
   if (
@@ -3103,10 +3144,9 @@ function openIncomePlan() {
   setTimeout(() => $("incomeTargetAmount").focus(), 50);
 }
 function saveIncomePlan() {
-  const raw = $("incomeTargetAmount").value.trim();
-  const a = Number(raw);
-  if (!raw || !Number.isFinite(a) || a < 0 || a > Number.MAX_SAFE_INTEGER) {
-    toast("Escribe una estimación válida; usa 0 para quitarla");
+  const a = Number($("incomeTargetAmount").value);
+  if (!Number.isFinite(a) || a < 0) {
+    toast("Escribe una estimación válida");
     return;
   }
   state.monthlyIncomeTarget = a;
@@ -3324,7 +3364,8 @@ function importFullBackup(event) {
                 typeof t === "object" &&
                 !Array.isArray(t) &&
                 ["income", "expense", "saving"].includes(t.type) &&
-                Number.isFinite(Number(t.amount)) && Number(t.amount) > 0 && Number(t.amount) <= Number.MAX_SAFE_INTEGER && isValidISODate(t.date) && validAccounts.has(t.account || "cash"),
+                Number.isFinite(Number(t.amount)) &&
+                Number(t.amount) > 0,
             )
           ) {
             toast("Un perfil del respaldo está dañado");
@@ -3341,43 +3382,6 @@ function importFullBackup(event) {
           if (d.accounts != null && (typeof d.accounts !== "object" || Array.isArray(d.accounts))) {
             toast("Los saldos de un perfil están dañados");
             return;
-          }
-          if (d.transactions.length > 50000 || d.transactions.some((t) =>
-            (typeof t.id !== "string" && typeof t.id !== "number") ||
-            typeof t.category !== "string" || !t.category.trim() ||
-            (t.description != null && typeof t.description !== "string")
-          )) {
-            toast("Un perfil contiene movimientos con campos no válidos");
-            return;
-          }
-          if (d.categories != null && d.categories.some((c) =>
-            !c || typeof c.name !== "string" || !c.name.trim() ||
-            !["income", "expense", "saving"].includes(c.type) ||
-            (c.emoji != null && typeof c.emoji !== "string")
-          )) {
-            toast("Las categorías de un perfil no son válidas");
-            return;
-          }
-          const nonNegative = (n) => Number.isFinite(Number(n)) && Number(n) >= 0 && Number(n) <= Number.MAX_SAFE_INTEGER;
-          if (!nonNegative(d.monthlyBudget ?? 0) || !nonNegative(d.monthlyIncomeTarget ?? 0)) {
-            toast("Los presupuestos o estimaciones de un perfil no son válidos");
-            return;
-          }
-          if (d.accounts && ["cash", "nequi", "nu"].some((a) => !nonNegative(d.accounts[a] ?? 0))) {
-            toast("Los saldos de un perfil no son válidos");
-            return;
-          }
-          if (d.budgets && Object.values(d.budgets).some((v) => !nonNegative(v))) {
-            toast("Los límites de categoría de un perfil no son válidos");
-            return;
-          }
-          for (const [field, amountField] of [["debts", "total"], ["savingsGoals", "target"], ["recurringExpenses", "amount"]]) {
-            if (d[field] != null && (!Array.isArray(d[field]) || d[field].length > 10000 ||
-              d[field].some((item) => !item || typeof item.name !== "string" ||
-                !item.name.trim() || !nonNegative(item[amountField]) || Number(item[amountField]) <= 0))) {
-              toast("Las deudas, metas o recurrencias de un perfil no son válidas");
-              return;
-            }
           }
         } catch (e) {
           toast("Un perfil del respaldo está dañado");
@@ -3439,11 +3443,7 @@ function exportTransactionsCSV() {
   const csv =
     "\uFEFF" +
     rows
-      .map((row) => row.map((v) => {
-        let value = String(v ?? "");
-        if (/^\s*[=+@-]/.test(value)) value = "'" + value;
-        return '"' + value.replace(/"/g, '""') + '"';
-      }).join(";"))
+      .map((row) => row.map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"').join(";"))
       .join("\r\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }),
     url = URL.createObjectURL(blob),
@@ -3519,7 +3519,7 @@ function renderAnalysis() {
     ? cats
         .map(
           (x) =>
-            `<div class="category-row"><div class="cat-line"><strong>${esc(x.c.emoji)} ${esc(x.c.name)}</strong><span>${money(x.val)}</span></div></div>`,
+            `<div class="category-row"><div class="cat-line"><strong>${x.c.emoji} ${esc(x.c.name)}</strong><span>${money(x.val)}</span></div></div>`,
         )
         .join("")
     : '<div class="empty">Cuando registres gastos, aquí verás en qué categorías estás gastando.</div>';
@@ -3551,7 +3551,7 @@ function renderDebtGoals() {
         .map((d) => {
           const left = debtRemaining(d),
             paid = Number(d.total) - left;
-          return `<div class="category-row"><div class="cat-line"><strong>${esc(d.name)}</strong><strong>${money(left)}</strong></div><div class="movement-meta">Saldo inicial: ${money(d.total)} · Abonado: ${money(paid)}</div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="payDebt(decodeURIComponent('${jsArg(d.id)}'))">Registrar abono</button><button class="mini-btn delete" onclick="removeDebt(decodeURIComponent('${jsArg(d.id)}'))">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>${esc(d.name)}</strong><strong>${money(left)}</strong></div><div class="movement-meta">Saldo inicial: ${money(d.total)} · Abonado: ${money(paid)}</div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="payDebt(${esc(JSON.stringify(String(d.id)))})">Registrar abono</button><button class="mini-btn delete" onclick="removeDebt(${esc(JSON.stringify(String(d.id)))})">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Aún no tienes deudas registradas.</div>';
@@ -3560,7 +3560,7 @@ function renderDebtGoals() {
         .map((g) => {
           const saved = goalSaved(g),
             pct = Math.min(100, g.target ? Math.round((saved / g.target) * 100) : 0);
-          return `<div class="category-row"><div class="cat-line"><strong>🎯 ${esc(g.name)}</strong><strong>${pct}%</strong></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="budget-numbers"><span>Ahorrado <strong>${money(saved)}</strong></span><span>Meta <strong>${money(g.target)}</strong></span></div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="contributeGoal(decodeURIComponent('${jsArg(g.id)}'))">Aportar ahorro</button><button class="mini-btn delete" onclick="removeGoal(decodeURIComponent('${jsArg(g.id)}'))">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>🎯 ${esc(g.name)}</strong><strong>${pct}%</strong></div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="budget-numbers"><span>Ahorrado <strong>${money(saved)}</strong></span><span>Meta <strong>${money(g.target)}</strong></span></div><div style="display:flex;justify-content:flex-end;margin-top:8px;gap:7px"><button class="mini-btn limit" onclick="contributeGoal(${esc(JSON.stringify(String(g.id)))})">Aportar ahorro</button><button class="mini-btn delete" onclick="removeGoal(${esc(JSON.stringify(String(g.id)))})">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Crea una meta para seguir cuánto llevas ahorrado.</div>';
@@ -3577,7 +3577,7 @@ function renderRecurringExpenses() {
         .map((r) => {
           const done = r.lastRegistered === m,
             due = Math.min(Number(r.day) || 1, lastDay) <= day;
-          return `<div class="category-row"><div class="cat-line"><strong>${esc(r.name)}</strong><strong>${money(r.amount)}</strong></div><div class="movement-meta">Día ${r.day} · ${esc(r.category)} · ${{ cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[r.account] || "Efectivo"}</div><div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px"><button class="mini-btn limit" ${done || !due ? "disabled" : ""} onclick="registerRecurringExpense(decodeURIComponent('${jsArg(r.id)}'))">${done ? "Registrado este mes" : due ? "Confirmar cobro" : "Aún no vence"}</button><button class="mini-btn delete" onclick="removeRecurringExpense(decodeURIComponent('${jsArg(r.id)}'))">Eliminar</button></div></div>`;
+          return `<div class="category-row"><div class="cat-line"><strong>${esc(r.name)}</strong><strong>${money(r.amount)}</strong></div><div class="movement-meta">Día ${r.day} · ${esc(r.category)} · ${{ cash: "Efectivo", nequi: "Nequi", nu: "Nu" }[r.account] || "Efectivo"}</div><div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px"><button class="mini-btn limit" ${done || !due ? "disabled" : ""} onclick="registerRecurringExpense(${esc(JSON.stringify(String(r.id)))})">${done ? "Registrado este mes" : due ? "Confirmar cobro" : "Aún no vence"}</button><button class="mini-btn delete" onclick="removeRecurringExpense(${esc(JSON.stringify(String(r.id)))})">Eliminar</button></div></div>`;
         })
         .join("")
     : '<div class="empty">Aún no tienes gastos recurrentes.</div>';
@@ -3603,13 +3603,13 @@ function addRecurringExpense() {
     const amount = Number(data.amount);
     const day = Number(data.day);
     if (!name) { toast("Ponle un nombre"); return; }
-    if (!Number.isFinite(amount) || !(amount > 0) || amount > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
+    if (!Number.isFinite(amount) || !(amount > 0)) { toast("Ingresa un valor válido"); return; }
     if (!Number.isInteger(day) || day < 1 || day > 31) { toast("El día debe estar entre 1 y 31"); return; }
     const category = cats.find((c) => c.name === data.category);
     if (!category) { toast("Elige una categoría de gasto"); return; }
     if (!["cash", "nequi", "nu"].includes(data.account)) { toast("Elige un bolsillo"); return; }
     state.recurringExpenses.push({
-      id: makeId("r"), name: name.slice(0, 50), amount, day,
+      id: "r_" + Date.now(), name: name.slice(0, 50), amount, day,
       category: category.name, account: data.account, lastRegistered: "",
     });
     persist();
@@ -3634,7 +3634,7 @@ function registerRecurringExpense(id) {
   }
   if (!confirm(`¿Confirmas que ya pagaste ${r.name} por ${money(r.amount)}?`)) return;
   state.transactions.push({
-    id: makeId("tx"),
+    id: Date.now(),
     type: "expense",
     amount: r.amount,
     category: r.category,
@@ -3670,8 +3670,8 @@ function addDebt() {
     const name = String(data.name || "").trim();
     const total = Number(data.total);
     if (!name) { toast("Escribe a quién corresponde"); return; }
-    if (!Number.isFinite(total) || !(total > 0) || total > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
-    state.debts.push({ id: makeId("d"), name: name.slice(0, 50), total });
+    if (!Number.isFinite(total) || !(total > 0)) { toast("Ingresa un valor válido"); return; }
+    state.debts.push({ id: "d_" + Date.now(), name: name.slice(0, 50), total });
     persist();
     paint();
     toast("Deuda anotada");
@@ -3695,7 +3695,7 @@ function payDebt(id) {
   }).then((data) => {
     if (!data) return;
     const amount = Number(data.amount);
-    if (!(amount > 0) || amount > left) {
+    if (!Number.isFinite(amount) || !(amount > 0) || amount > left) {
       toast("El abono debe ser mayor que cero y no superar lo pendiente");
       return;
     }
@@ -3703,7 +3703,7 @@ function payDebt(id) {
     if (!state.categories.some((c) => c.name === "Pago de deudas"))
       state.categories.push({ name: "Pago de deudas", type: "expense", emoji: "💳" });
     state.transactions.push({
-      id: makeId("tx"), type: "expense", amount, category: "Pago de deudas",
+      id: Date.now(), type: "expense", amount, category: "Pago de deudas",
       description: "Abono: " + d.name, date: today(), account: data.account, debtId: id,
     });
     persist();
@@ -3737,8 +3737,8 @@ function addSavingsGoal() {
     const name = String(data.name || "").trim();
     const target = Number(data.target);
     if (!name) { toast("Ponle un nombre a la meta"); return; }
-    if (!Number.isFinite(target) || !(target > 0) || target > Number.MAX_SAFE_INTEGER) { toast("Ingresa un objetivo válido"); return; }
-    state.savingsGoals.push({ id: makeId("g"), name: name.slice(0, 50), target });
+    if (!Number.isFinite(target) || !(target > 0)) { toast("Ingresa un objetivo válido"); return; }
+    state.savingsGoals.push({ id: "g_" + Date.now(), name: name.slice(0, 50), target });
     persist();
     paint();
     toast("Meta creada");
@@ -3763,10 +3763,10 @@ function contributeGoal(id) {
   }).then((data) => {
     if (!data) return;
     const amount = Number(data.amount);
-    if (!Number.isFinite(amount) || !(amount > 0) || amount > Number.MAX_SAFE_INTEGER) { toast("Ingresa un valor válido"); return; }
+    if (!Number.isFinite(amount) || !(amount > 0)) { toast("Ingresa un valor válido"); return; }
     if (!["cash", "nequi", "nu"].includes(data.account)) { toast("Elige un bolsillo"); return; }
     state.transactions.push({
-      id: makeId("tx"), type: "saving", amount, category: "Ahorro",
+      id: Date.now(), type: "saving", amount, category: "Ahorro",
       description: "Meta: " + g.name, date: today(), account: data.account, goalId: id,
     });
     persist();
@@ -3782,25 +3782,12 @@ function removeGoal(id) {
   toast("Meta eliminada; los ahorros se conservaron");
 }
 function saveWallets() {
-  const fields = [
-    ["cash", $("openCash").value],
-    ["nequi", $("openNequi").value],
-    ["nu", $("openNu").value],
-  ];
-  const next = {};
-  for (const [key, raw] of fields) {
-    if (String(raw).trim() === "") {
-      toast("Completa los tres saldos iniciales; usa 0 si no tienes dinero en un bolsillo");
-      return;
-    }
-    const value = Number(raw);
-    if (!Number.isFinite(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) {
-      toast("Los saldos deben ser cantidades válidas y no negativas");
-      return;
-    }
-    next[key] = value;
+  const values = [$("openCash").value, $("openNequi").value, $("openNu").value].map((v) => Number(v));
+  if (values.some((v) => !Number.isFinite(v) || v < 0)) {
+    toast("Los saldos deben ser números válidos y no negativos");
+    return;
   }
-  state.accounts = next;
+  [state.accounts.cash, state.accounts.nequi, state.accounts.nu] = values;
   persist();
   paint();
   toast("Saldos guardados");
@@ -4317,9 +4304,8 @@ window.addEventListener("resize", placeLiquid);
 </script>
 <!-- ==================== FIN FUNCIONAMIENTO ==================== -->
 <script>
-  // PWA: la caché permite abrir la interfaz sin conexión tras la primera carga.
-  if ("serviceWorker" in navigator && !window.Capacitor &&
-      (location.protocol === "https:" || location.hostname === "localhost")) {
+  // Registro PWA: opcional en navegador; la app también funciona dentro de Capacitor.
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./service-worker.js").catch((error) => {
         console.warn("No se pudo registrar el modo sin conexión:", error);
